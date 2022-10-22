@@ -1,0 +1,3 @@
+[submodule "robotcdriversuite"]
+	path = robotcdriversuite
+	url = https://github.com/botbench/robotcdriversuite.git
