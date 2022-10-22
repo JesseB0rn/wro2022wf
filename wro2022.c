@@ -516,18 +516,13 @@ void rgb2hsv(rgb in, hsv &out)
 }
 
 int hsvToColor(hsv in) {
-	if ((in.s + in.v) < 8)
+	if ((in.s + in.v) < 15)
 		return -1; // nothing
+	if (in.h < 25 || in.h > 335)
+		return 2; // red
 	if (in.h >= 25)
 		return 1; // yellow
-	if (in.h < 10 || in.h > 345)
-		return 2; // red
 	return 0; // basecase black
-}
-//_htv2HSVToColor
-int htv2HSVToColor(float hue, float sat, float val) {
-	if (val <= 5) return -1;
-	return 0;
 }
 
 
@@ -817,28 +812,6 @@ task main()
 	eraseDisplay();
 	setLEDColor(ledOff);
 	delay(150);
-
-
-	//while(true) {
-	//	readSensor(&color_right);
-	//	datalogDataGroupStart();
- //   datalogAddValue(0, color_right.hue);
- //   datalogAddValue(1, color_right.saturation);
- // datalogAddValue(2, color_right.value);
-	//datalogDataGroupEnd();
-
-	//}
-
-
-	//while (true) {
-	//	setMotorTarget(motor_dropper, -170, 10);
-	//	waitUntilMotorStop(motor_dropper);
-	//	delay(500);
-	//	setMotorTarget(motor_dropper, 0, 80);
-
-	//	waitUntilMotorStop(motor_dropper);
-	//	delay(1500);
-	//}
 
 
 	//pickupBottles();
