@@ -678,14 +678,14 @@ void solve_side() {
 	resetMotorEncoder(motor_drive_right);
 
 	// ADJUST HERE -------------------------------------------------------------------------- >
-	lfPDcm(15, 3.6);
+	lfPDcm(15, 4);
 	// ADJUST HERE FOR ~5mm of area next to grey table surrounding (long table direction) ---->
 
 	setMotorTarget(motor_grab, 435, 30);
 	stopTask(measureIndicators);
 	stopTask(measureIndicators_l);
 
-	turn(15, 40, 15, 21, 87.5);
+	turn(15, 40, 15, 21, 88.5);
 
 	resetMotorEncoder(motor_drive_right);
 
@@ -740,7 +740,7 @@ void solve_side() {
 			setMotorTarget(motor_grab, 120, 30);
 			waitUntilMotorStop(motor_grab);
 		}
-		driveCm(-40, -40, 30.0);
+		driveCm(-37, -40, 32.0);
 		setMotorTarget(motor_grab, 435, 20);
 		driveCm(-40, -40, 47.0);
 	}
@@ -771,21 +771,35 @@ void solve_side() {
 
 		} else {
 		// ball
-		driveCm(-40, -40, 30.0);
+		driveCm(-39, -40, 30.0);
 		measureIndex = side + 1;
 		startTask(measureWashable_r);
 		driveCm(-40, -40, 36.0);
 		stopTask(measureWashable_r);
 		displayLogic();
-		driveCm(-40, -40, 45.0);
-		brake(-40, 50.5);
-
+		driveCm(-40, -40, 46.0);
+		brake(-40, 51.0);
+		resetMotorEncoder(motor_drive_right);
 		setMotorTarget(motor_grab, 135, 30);
 		waitUntilMotorStop(motor_grab);
-		delay(500);
+		driveCm(10, 10, 2);
+		brake(0, 0);
+		delay(100);
 		setMotorTarget(motor_grab, 435, 20);
 		waitUntilMotorStop(motor_grab);
+
+		if (washables[side + 1] != -1) {
+			driveCm(30, 30, 13);
+			brake(30, 16);
+			setMotorTarget(motor_grab, 70, 30);
+			waitUntilMotorStop(motor_grab);
+			setMotorTarget(motor_grab, 120, 30);
+			waitUntilMotorStop(motor_grab);
+		}
+
+		driveCm(40, 40, 16);
 	}
+	turn(40, 40, 0, 34, 88.0);
 }
 
 
@@ -799,11 +813,11 @@ task main()
 	setMotorBrakeMode(motorD, motorBrake);
 	initSensor(&color_right, S4);
 	initSensor(&color_left, S3);
-    if (!readSensor(&color_right) || !readSensor(&color_left)) {
-      displayTextLine(4, "SENSOR INIT ERROR!!");
-      sleep(2000);
-      stopAllTasks();
-    }
+	if (!readSensor(&color_right) || !readSensor(&color_left)) {
+		displayTextLine(4, "SENSOR INIT ERROR!!");
+		sleep(2000);
+		stopAllTasks();
+	}
 	startTask(reset_start);
 	eraseDisplay();
 	waitUntil(reset);
@@ -842,16 +856,6 @@ task main()
 	resetMotorEncoder(motor_drive_right);
 	driveCm(-60, -60, 90);
 	brake(-60, 99);
-
-	for(int i = 0; i < 4; i++)
-	{
-		displayTextLine(i, "%d", colors[i]);
-		displayTextLine(i+4, "WASH: %d", washables[i]);
-	}
+	displayLogic();
 	delay(10000);
-
-
-
-	// 15 6 2
-	// 0 4 1
 }
