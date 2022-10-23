@@ -20,12 +20,12 @@ typedef struct {
 	float v;       // a fraction between 0 and 1
 } hsv;
 
-float LF_P_a = 0.000055;
+float LF_P_a = 0.000065;
 float LF_P_u = 45;
-float LF_P_v = 0.08;
+float LF_P_v = 0.12;
 float LF_D_a = 0.0018;
 float LF_D_u = 35;
-float LF_D_v = 6;
+float LF_D_v = 6.2;
 
 
 float tireDiameter = 6.24;
@@ -57,7 +57,7 @@ void displayLogic() {
 		displayTextLine(i, "INDI %d: %d", i, colors[i]);
 		displayTextLine(i+4, "WASH %d: %d", i, washables[i]);
 	}
-	writeDebugStreamLine("[IND] L%d R%d", colors[0], colors[1]);
+	writeDebugStreamLine("[IND] B%d Y%d R%d G%d", colors[0], colors[1], colors[2], colors[3]);
 	writeDebugStreamLine("[WSH] %d %d %d %d", washables[0], washables[1],washables[2],washables[3]);
 }
 
@@ -801,7 +801,41 @@ void solve_side() {
 	}
 	turn(40, 40, 0, 34, 88.0);
 }
+//_gotoSide2
+void gotoSide2() {
+	// person present next to start
+	side = 2;
+	if(true) {
+		resetMotorEncoder(motor_drive_right);
+		lfPDcm(15, 8);
+		lfPDline(60, true, true);
+		resetMotorEncoder(motor_drive_right);
+		lfPDcm(60, 19);
+		driveCm(60, 60, 43);
+		brake(60, 48);
+		turn(40, 60, 40, tireDistance/2, 25);
+		turn(40, 60, 40, -40, 45);
+		turn(40, 60, 40, tireDistance/2, 15);
+		//resetMotorEncoder(motor_drive_right);
+		//stopAllTasks();
+		resetMotorEncoder(motor_drive_right);
+		lfPDcm(30, 15);
+		lfPDcm(15, 20);
+		lfPDline(15, true, true);
+		resetMotorEncoder(motor_drive_right);
+		startTask(measureIndicators);
+		startTask(measureIndicators_l);
+		// ADJUST HERE -------------------------------------------------------------------------- >
+		lfPDcm(15, 4);
+		// ADJUST HERE FOR ~5mm of area next to grey table surrounding (long table direction) ---->
 
+		setMotorTarget(motor_grab, 435, 30);
+		stopTask(measureIndicators);
+		stopTask(measureIndicators_l);
+		displayLogic();
+	}
+
+}
 
 // _main
 task main()
@@ -830,14 +864,17 @@ task main()
 	//pickupBottles();
 
 	// unit test side
-	setMotorTarget(motor_grab, 435, 20);
-	waitUntilMotorStop(motor_grab);
-	delay(200);
+	//setMotorTarget(motor_grab, 435, 20);
+	//waitUntilMotorStop(motor_grab);
+	//delay(200);
 
-	resetMotorEncoder(motor_drive_right);
-	lfPDcm(15, 10);
+	//resetMotorEncoder(motor_drive_right);
+	//lfPDcm(15, 10);
 
-	solve_side();
+	//solve_side();
+
+	gotoSide2();
+
 
 	brake(0, 0);
 	delay(500);
