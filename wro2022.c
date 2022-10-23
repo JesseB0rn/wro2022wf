@@ -633,7 +633,7 @@ task measureWashable_r()
 //_dropDrink()
 task dropDrink() {
 	dropped = false;
-	setMotorTarget(motor_dropper, -175, 10);
+	setMotorTarget(motor_dropper, -200, 20);
 	waitUntilMotorStop(motor_dropper);
 	delay(500);
 	setMotorTarget(motor_dropper, 0, 60);
@@ -897,7 +897,12 @@ task main()
 
 	//pickupBottles();
 
-	// unit test side
+
+	//startTask(dropDrink);
+	//waitUntil(dropped);
+	//stopAllTasks()
+
+	// unit test 2x side and path
 	setMotorTarget(motor_grab, 435, 20);
 	waitUntilMotorStop(motor_grab);
 	delay(200);
