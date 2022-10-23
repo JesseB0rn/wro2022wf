@@ -27,6 +27,7 @@ float LF_D_a = 0.0018;
 float LF_D_u = 35;
 float LF_D_v = 6.2;
 
+bool dropped = false;
 
 float tireDiameter = 6.24;
 float tireDistance = 17.20;
@@ -629,6 +630,17 @@ task measureWashable_r()
 
 	}
 }
+//_dropDrink()
+task dropDrink() {
+	dropped = false;
+	setMotorTarget(motor_dropper, -175, 10);
+	waitUntilMotorStop(motor_dropper);
+	delay(500);
+	setMotorTarget(motor_dropper, 0, 60);
+	waitUntilMotorStop(motor_dropper);
+	dropped = true;
+}
+
 // _reset_start
 task reset_start()
 {
@@ -697,6 +709,8 @@ void solve_side() {
 
 		displayLogic();
 
+
+		startTask(dropDrink);
 		// if theres a washable
 		if (washables[side] != -1) {
 			setMotorTarget(motor_grab, 70, 30);
@@ -705,13 +719,9 @@ void solve_side() {
 			waitUntilMotorStop(motor_grab);
 			setMotorTarget(motor_grab, 435, 20);
 		}
+		waitUntil(dropped);
 
-		setMotorTarget(motor_dropper, -170, 10);
-		waitUntilMotorStop(motor_dropper);
-		delay(500);
-		setMotorTarget(motor_dropper, 0, 60);
-		waitUntilMotorStop(motor_dropper);
-		delay(800);
+
 
 		resetMotorEncoder(motor_drive_right);
 		driveCm(-40, -40, 20.0);
@@ -753,21 +763,17 @@ void solve_side() {
 		brake(-40, 36.0);
 		stopTask(measureWashable_r);
 		displayLogic();
+
+		startTask(dropDrink);
 		// if theres a washable
 		if (washables[side+1] != -1) {
 			setMotorTarget(motor_grab, 70, 30);
 			waitUntilMotorStop(motor_grab);
 			setMotorTarget(motor_grab, 120, 30);
 			waitUntilMotorStop(motor_grab);
-			setMotorTarget(motor_grab, 435, 20);
+			//setMotorTarget(motor_grab, 435, 20);
 		}
-
-		setMotorTarget(motor_dropper, -170, 10);
-		waitUntilMotorStop(motor_dropper);
-		delay(500);
-		setMotorTarget(motor_dropper, 0, 60);
-		waitUntilMotorStop(motor_dropper);
-		delay(800);
+		waitUntil(dropped);
 
 		} else {
 		// ball
@@ -795,6 +801,8 @@ void solve_side() {
 			waitUntilMotorStop(motor_grab);
 			setMotorTarget(motor_grab, 120, 30);
 			waitUntilMotorStop(motor_grab);
+			} else {
+			setMotorTarget(motor_grab, 70, 30);
 		}
 
 		driveCm(40, 40, 16);
@@ -813,48 +821,52 @@ void gotoSide2() {
 		lfPDcm(60, 19);
 		driveCm(60, 60, 43);
 		brake(60, 48);
+
 		turn(40, 60, 40, tireDistance/2, 25);
 		turn(40, 60, 40, -40, 45);
 		turn(40, 60, 40, tireDistance/2, 15);
+		setMotorTarget(motor_grab, 435, 30);
 		//resetMotorEncoder(motor_drive_right);
 		//stopAllTasks();
 		resetMotorEncoder(motor_drive_right);
 		lfPDcm(30, 15);
 		lfPDcm(15, 20);
-		lfPDline(15, true, true);
-		resetMotorEncoder(motor_drive_right);
-		startTask(measureIndicators);
-		startTask(measureIndicators_l);
-		// ADJUST HERE -------------------------------------------------------------------------- >
-		lfPDcm(15, 4);
-		// ADJUST HERE FOR ~5mm of area next to grey table surrounding (long table direction) ---->
+		//lfPDline(15, true, true);
+		//resetMotorEncoder(motor_drive_right);
+		//startTask(measureIndicators);
+		//startTask(measureIndicators_l);
+		//// ADJUST HERE -------------------------------------------------------------------------- >
+		//lfPDcm(15, 4);
+		//// ADJUST HERE FOR ~5mm of area next to grey table surrounding (long table direction) ---->
 
-		setMotorTarget(motor_grab, 435, 30);
-		stopTask(measureIndicators);
-		stopTask(measureIndicators_l);
-		displayLogic();
-	} else {
-	resetMotorEncoder(motor_drive_right);
+		//setMotorTarget(motor_grab, 435, 30);
+		//stopTask(measureIndicators);
+		//stopTask(measureIndicators_l);
+		//displayLogic();
+		} else {
+		resetMotorEncoder(motor_drive_right);
 		lfPDcm(15, 8);
 		lfPDline(60, true, true);
 		resetMotorEncoder(motor_drive_right);
 		lfPDcm(60, 19);
-		driveCm(60, 60, 90);
+		driveCm(60, 60, 40);
+		setMotorTarget(motor_grab, 435, 30);
+		driveCm(60,60,90);
 		resetMotorEncoder(motor_drive_right);
 		lfPDcm(30, 15);
 		lfPDcm(15, 20);
-		lfPDline(15, true, true);
-		resetMotorEncoder(motor_drive_right);
-		startTask(measureIndicators);
-		startTask(measureIndicators_l);
-		// ADJUST HERE -------------------------------------------------------------------------- >
-		lfPDcm(15, 4);
-		// ADJUST HERE FOR ~5mm of area next to grey table surrounding (long table direction) ---->
+		//lfPDline(15, true, true);
+		//resetMotorEncoder(motor_drive_right);
+		//startTask(measureIndicators);
+		//startTask(measureIndicators_l);
+		//// ADJUST HERE -------------------------------------------------------------------------- >
+		//lfPDcm(15, 4);
+		//// ADJUST HERE FOR ~5mm of area next to grey table surrounding (long table direction) ---->
 
-		setMotorTarget(motor_grab, 435, 30);
-		stopTask(measureIndicators);
-		stopTask(measureIndicators_l);
-		displayLogic();
+		//setMotorTarget(motor_grab, 435, 30);
+		//stopTask(measureIndicators);
+		//stopTask(measureIndicators_l);
+		//displayLogic();
 	}
 
 }
@@ -886,20 +898,18 @@ task main()
 	//pickupBottles();
 
 	// unit test side
-	//setMotorTarget(motor_grab, 435, 20);
-	//waitUntilMotorStop(motor_grab);
-	//delay(200);
+	setMotorTarget(motor_grab, 435, 20);
+	waitUntilMotorStop(motor_grab);
+	delay(200);
 
-	//resetMotorEncoder(motor_drive_right);
-	//lfPDcm(15, 10);
+	resetMotorEncoder(motor_drive_right);
+	lfPDcm(15, 10);
 
-	//solve_side();
-
+	solve_side();
 	gotoSide2();
-
+	solve_side();
 
 	brake(0, 0);
 	delay(500);
 	stopAllTasks();
-
 }
