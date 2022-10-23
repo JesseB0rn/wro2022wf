@@ -827,15 +827,9 @@ task main()
 	setLEDColor(ledOff);
 	delay(150);
 
-
 	//pickupBottles();
 
-
-	//// picked up
-
-	//turn(0, 40, 0, -1, 70);
-	//turn(0, 60, 60, 47.25, 70);
-
+	// unit test side
 	setMotorTarget(motor_grab, 435, 20);
 	waitUntilMotorStop(motor_grab);
 	delay(200);
@@ -849,13 +843,4 @@ task main()
 	delay(500);
 	stopAllTasks();
 
-	resetMotorEncoder(motor_drive_right);
-	driveCm(60, 60, 23.5);
-	brake(60, 28.5);
-	delay(500);
-	resetMotorEncoder(motor_drive_right);
-	driveCm(-60, -60, 90);
-	brake(-60, 99);
-	displayLogic();
-	delay(10000);
 }
