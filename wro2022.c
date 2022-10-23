@@ -833,6 +833,28 @@ void gotoSide2() {
 		stopTask(measureIndicators);
 		stopTask(measureIndicators_l);
 		displayLogic();
+	} else {
+	resetMotorEncoder(motor_drive_right);
+		lfPDcm(15, 8);
+		lfPDline(60, true, true);
+		resetMotorEncoder(motor_drive_right);
+		lfPDcm(60, 19);
+		driveCm(60, 60, 90);
+		resetMotorEncoder(motor_drive_right);
+		lfPDcm(30, 15);
+		lfPDcm(15, 20);
+		lfPDline(15, true, true);
+		resetMotorEncoder(motor_drive_right);
+		startTask(measureIndicators);
+		startTask(measureIndicators_l);
+		// ADJUST HERE -------------------------------------------------------------------------- >
+		lfPDcm(15, 4);
+		// ADJUST HERE FOR ~5mm of area next to grey table surrounding (long table direction) ---->
+
+		setMotorTarget(motor_grab, 435, 30);
+		stopTask(measureIndicators);
+		stopTask(measureIndicators_l);
+		displayLogic();
 	}
 
 }
