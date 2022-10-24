@@ -533,9 +533,9 @@ void rgb2hsv(rgb in, hsv &out)
 
 	return;
 }
-
+//_hsvToColor
 int hsvToColor(hsv in, bool nothing = true) {
-	if (((in.h < 25 || in.h > 335) && in.v < 35) || in.v < 60) {
+	if ((((in.h < 25 || in.h > 335) && in.v < 35) || in.v < 60) && !nothing) {
 		return 0;
 	}
 	if ((in.s + in.v) < 15 && nothing)
@@ -781,7 +781,7 @@ void solve_side() {
 		driveCm(-40, -40, 30.0);
 		measureIndex = side + 1;
 		startTask(measureWashable_r);
-		brake(-40, 36.0);
+		brake(-40, 35.5);
 		stopTask(measureWashable_r);
 		displayLogic();
 		dropped = false;
@@ -987,20 +987,17 @@ task main()
 	//stopAllTasks()
 
 	// unit test 2x side and path
-	//setMotorTarget(motor_grab, 435, 20);
-	//waitUntilMotorStop(motor_grab);
-	//delay(200);
+	setMotorTarget(motor_grab, 435, 20);
+	waitUntilMotorStop(motor_grab);
+	delay(200);
 
-	//resetMotorEncoder(motor_drive_right);
-	//lfPDcm(15, 10);
+	resetMotorEncoder(motor_drive_right);
+	lfPDcm(15, 10);
 
-	//solve_side();
-	//gotoSide2();
-	//solve_side();
-	washables[0] = 2;
-	washables[1] = 1;
-	washables[2] = -1;
-	washables[3] = 0;
+	solve_side();
+	gotoSide2();
+	solve_side();
+
 	gotoWashroom();
 	dropWashables();
 
