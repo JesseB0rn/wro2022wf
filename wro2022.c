@@ -578,7 +578,6 @@ task measureIndicators()
 		}
 		displayTextLine(0, "R: %d %d %d", max.r, max.g, max.b);
 		colors[side + 1] = (max.r + max.g + max.b) >  borderRGB;
-		writeDebugStreamLine("[MAX R] %d", (max.r + max.g + max.b));
 	}
 }
 //_measureIndicators_l
@@ -611,7 +610,6 @@ task measureIndicators_l()
 		}
 		displayTextLine(1, "L: %d %d %d", max.r, max.g, max.b);
 		colors[side] = (max.r + max.g + max.b) >  borderRGB;
-		writeDebugStreamLine("[MAX L] %d ", (max.r + max.g + max.b));
 	}
 }
 
@@ -648,7 +646,7 @@ task measureWashable_r()
 		rgb2hsv(max, res);
 
 		washables[measureIndex] = hsvToColor(res);
-
+		writeDebugStreamLine("[MWASH] %d %d %d", res.h, res.s, res.v);
 	}
 }
 //_dropDrink()
@@ -838,6 +836,7 @@ void gotoSide2() {
 	side = 2;
 	if(true) {
 		resetMotorEncoder(motor_drive_right);
+		setMotorTarget(motor_grab, 50, 30);
 		lfPDcm(15, 8);
 		lfPDline(60, true, true);
 		resetMotorEncoder(motor_drive_right);
