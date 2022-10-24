@@ -894,6 +894,55 @@ void gotoWashroom() {
 	frames[2] = 3 - (frames[1] + frames[0]);
 	writeDebugStreamLine("[FRAMES] %d %d %d", frames[0], frames[1], frames[2]);
 }
+//_drop
+void drop() {
+	setMotorTarget(motor_dropper, -200, 60);
+	waitUntilMotorStop(motor_dropper);
+	delay(500);
+	setMotorTarget(motor_dropper, 0, 60);
+	waitUntilMotorStop(motor_dropper);
+}
+void dropl() {
+	setMotorTarget(motor_dropper, -75, 30);
+	waitUntilMotorStop(motor_dropper);
+	setMotorTarget(motor_dropper, -200, 75);
+	waitUntilMotorStop(motor_dropper);
+	delay(500);
+	setMotorTarget(motor_dropper, 0, 60);
+	waitUntilMotorStop(motor_dropper);
+}
+//_dropWashables
+void dropWashables() {
+	resetMotorEncoder(motor_drive_right);
+	int current_pos = 0;
+	int centerToCenterCM = 11;
+	for (int i = 0; i < 4; i++) {
+		int value = washables[i];
+		if (value == -1) {
+			continue;
+		}
+		int index = 0;
+		while ( index < 3 && frames[index] != value ) {
+			++index;
+		}
+		int t = (1 - ( index == 3 ? 1 : index )) * centerToCenterCM - current_pos;
+		writeDebugStreamLine("[Next Target] %d", t);
+		if (t <= current_pos) {
+			driveCm(-30, -30, t);
+			} else if (t == current_pos) {} else {
+			driveCm(30, 30, t);
+		}
+		brake(0, 0);
+		if (i > 1) {
+			dropl();
+		}
+		else {
+			drop();
+		}
+		current_pos = t;
+		resetMotorEncoder(motor_drive_right);
+	}
+}
 
 
 // _main
@@ -942,7 +991,12 @@ task main()
 	//solve_side();
 	//gotoSide2();
 	//solve_side();
+	washables[0] = 2;
+	washables[1] = 1;
+	washables[2] = -1;
+	washables[3] = 0;
 	gotoWashroom();
+	dropWashables();
 
 	brake(0, 0);
 	delay(500);
