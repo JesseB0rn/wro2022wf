@@ -454,6 +454,23 @@ void driveCm(float leftSpeed, float rightSpeed, float distance)
 	setMotorSpeed(motor_drive_right, rightSpeed);
 	waitUntil(abs(distance)/(tireDiameter*PI)*360 <= abs(getMotorEncoder(motor_drive_right)));
 }
+//_driveCmDropping
+void driveCmDropping(float leftSpeed, float rightSpeed, float distance)
+{
+	if(leftSpeed == rightSpeed)
+	{
+		setMotorSync(motor_drive_left, motor_drive_right, -100, leftSpeed);
+	}
+	setMotorSpeed(motor_drive_left, leftSpeed);
+	setMotorSpeed(motor_drive_right, rightSpeed);
+
+	if ((distance/(tireDiameter*PI)*360-getMotorEncoder(motor_drive_right)) >= 0) {
+		waitUntil(distance/(tireDiameter*PI)*360 <= getMotorEncoder(motor_drive_right));
+	} else {
+		waitUntil(distance/(tireDiameter*PI)*360 >= getMotorEncoder(motor_drive_right));
+	}
+
+}
 
 
 //_compareRGB
@@ -896,16 +913,9 @@ void gotoWashroom() {
 }
 //_drop
 void drop() {
-	setMotorTarget(motor_dropper, -200, 60);
-	waitUntilMotorStop(motor_dropper);
-	delay(500);
-	setMotorTarget(motor_dropper, 0, 60);
-	waitUntilMotorStop(motor_dropper);
-}
-void dropl() {
 	setMotorTarget(motor_dropper, -75, 30);
 	waitUntilMotorStop(motor_dropper);
-	setMotorTarget(motor_dropper, -200, 75);
+	setMotorTarget(motor_dropper, -200, 60);
 	waitUntilMotorStop(motor_dropper);
 	delay(500);
 	setMotorTarget(motor_dropper, 0, 60);
@@ -925,22 +935,18 @@ void dropWashables() {
 		while ( index < 3 && frames[index] != value ) {
 			++index;
 		}
-		int t = (1 - ( index == 3 ? 1 : index )) * centerToCenterCM - current_pos;
+		int t = (1 - ( index == 3 ? 1 : index )) * centerToCenterCM + 0.1;
+
 		writeDebugStreamLine("[Next Target] %d", t);
 		if (t <= current_pos) {
-			driveCm(-30, -30, t);
+			driveCmDropping(-30, -30, t);
 			} else if (t == current_pos) {} else {
-			driveCm(30, 30, t);
+			driveCmDropping(30, 30, t);
 		}
 		brake(0, 0);
-		if (i > 1) {
-			dropl();
-		}
-		else {
-			drop();
-		}
+		drop();
+
 		current_pos = t;
-		resetMotorEncoder(motor_drive_right);
 	}
 }
 
