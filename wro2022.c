@@ -36,6 +36,7 @@ float brakeConsTurn = 0.11;
 
 bool colors[4];
 int washables[4];
+int frames[3];
 
 int side = 0;
 int measureIndex = 0;
@@ -516,8 +517,11 @@ void rgb2hsv(rgb in, hsv &out)
 	return;
 }
 
-int hsvToColor(hsv in) {
-	if ((in.s + in.v) < 15)
+int hsvToColor(hsv in, bool nothing = true) {
+	if (((in.h < 25 || in.h > 335) && in.v < 35) || in.v < 60) {
+		return 0;
+	}
+	if ((in.s + in.v) < 15 && nothing)
 		return -1; // nothing
 	if (in.h < 25 || in.h > 335)
 		return 2; // red
@@ -772,7 +776,7 @@ void solve_side() {
 			setMotorTarget(motor_grab, 120, 30);
 			waitUntilMotorStop(motor_grab);
 			//setMotorTarget(motor_grab, 435, 20);
-		} else {
+			} else {
 
 		}
 		waitUntil(dropped);
@@ -849,6 +853,49 @@ void gotoSide2() {
 
 }
 
+//_gotoWashroom
+void gotoWashroom() {
+	hsv res;
+	rgb curr;
+
+	setMotorTarget(motor_grab, 30, 30);
+	lfPDline(30, true, true);
+	turn(40, 60, 40, -tireDistance/2, 17.5);
+	turn(40, 60, 35, -70, 38.75);
+	turn(30, 60, 20, tireDistance/2, 56.5);
+
+	//turn(30, 60, 20, tireDistance/2, 20.0);
+	brake(0, 0);
+	delay(200);
+
+	readSensor(&color_left);
+	curr.r = (color_left.red+1);
+	curr.g = (color_left.green+1);
+	curr.b = (color_left.blue+1);
+	rgb2hsv(curr, res);
+	frames[0] = hsvToColor(res, false);
+	writeDebugStreamLine("[FRAME @ i0] %d %d %d", res.h, res.s, res.v);
+
+	resetMotorEncoder(motor_drive_right);
+	driveCm(-30, -30, 6);
+	brake(-30, 8);
+	delay(200);
+
+	readSensor(&color_left);
+	curr.r = (color_left.red+1);
+	curr.g = (color_left.green+1);
+	curr.b = (color_left.blue+1);
+
+	rgb2hsv(curr, res);
+	frames[1] = hsvToColor(res, false);
+	writeDebugStreamLine("[FRAME @ i1] %d %d %d", res.h, res.s, res.v);
+
+
+	frames[2] = 3 - (frames[1] + frames[0]);
+	writeDebugStreamLine("[FRAMES] %d %d %d", frames[0], frames[1], frames[2]);
+}
+
+
 // _main
 task main()
 {
@@ -873,6 +920,10 @@ task main()
 	setLEDColor(ledOff);
 	delay(150);
 
+
+
+
+
 	//pickupBottles();
 
 
@@ -881,16 +932,17 @@ task main()
 	//stopAllTasks()
 
 	// unit test 2x side and path
-	setMotorTarget(motor_grab, 435, 20);
-	waitUntilMotorStop(motor_grab);
-	delay(200);
+	//setMotorTarget(motor_grab, 435, 20);
+	//waitUntilMotorStop(motor_grab);
+	//delay(200);
 
-	resetMotorEncoder(motor_drive_right);
-	lfPDcm(15, 10);
+	//resetMotorEncoder(motor_drive_right);
+	//lfPDcm(15, 10);
 
-	solve_side();
-	gotoSide2();
-	solve_side();
+	//solve_side();
+	//gotoSide2();
+	//solve_side();
+	gotoWashroom();
 
 	brake(0, 0);
 	delay(500);
