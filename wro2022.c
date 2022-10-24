@@ -763,7 +763,7 @@ void solve_side() {
 		brake(-40, 36.0);
 		stopTask(measureWashable_r);
 		displayLogic();
-
+		dropped = false;
 		startTask(dropDrink);
 		// if theres a washable
 		if (washables[side+1] != -1) {
@@ -772,6 +772,8 @@ void solve_side() {
 			setMotorTarget(motor_grab, 120, 30);
 			waitUntilMotorStop(motor_grab);
 			//setMotorTarget(motor_grab, 435, 20);
+		} else {
+
 		}
 		waitUntil(dropped);
 
@@ -784,7 +786,7 @@ void solve_side() {
 		stopTask(measureWashable_r);
 		displayLogic();
 		driveCm(-40, -40, 46.0);
-		brake(-40, 51.0);
+		brake(-40, 50.6);
 		resetMotorEncoder(motor_drive_right);
 		setMotorTarget(motor_grab, 135, 30);
 		waitUntilMotorStop(motor_grab);
@@ -831,18 +833,6 @@ void gotoSide2() {
 		resetMotorEncoder(motor_drive_right);
 		lfPDcm(30, 15);
 		lfPDcm(15, 20);
-		//lfPDline(15, true, true);
-		//resetMotorEncoder(motor_drive_right);
-		//startTask(measureIndicators);
-		//startTask(measureIndicators_l);
-		//// ADJUST HERE -------------------------------------------------------------------------- >
-		//lfPDcm(15, 4);
-		//// ADJUST HERE FOR ~5mm of area next to grey table surrounding (long table direction) ---->
-
-		//setMotorTarget(motor_grab, 435, 30);
-		//stopTask(measureIndicators);
-		//stopTask(measureIndicators_l);
-		//displayLogic();
 		} else {
 		resetMotorEncoder(motor_drive_right);
 		lfPDcm(15, 8);
@@ -855,18 +845,6 @@ void gotoSide2() {
 		resetMotorEncoder(motor_drive_right);
 		lfPDcm(30, 15);
 		lfPDcm(15, 20);
-		//lfPDline(15, true, true);
-		//resetMotorEncoder(motor_drive_right);
-		//startTask(measureIndicators);
-		//startTask(measureIndicators_l);
-		//// ADJUST HERE -------------------------------------------------------------------------- >
-		//lfPDcm(15, 4);
-		//// ADJUST HERE FOR ~5mm of area next to grey table surrounding (long table direction) ---->
-
-		//setMotorTarget(motor_grab, 435, 30);
-		//stopTask(measureIndicators);
-		//stopTask(measureIndicators_l);
-		//displayLogic();
 	}
 
 }
