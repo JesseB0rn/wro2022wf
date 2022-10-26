@@ -769,7 +769,7 @@ void solve_side() {
 			setMotorTarget(motor_grab, 120, 30);
 			waitUntilMotorStop(motor_grab);
 		}
-		driveCm(-37, -40, 32.0);
+		driveCm(-39, -40, 32.0);
 		setMotorTarget(motor_grab, 435, 20);
 		driveCm(-40, -40, 47.0);
 	}
