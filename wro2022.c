@@ -728,7 +728,6 @@ void solve_side() {
 
 		displayLogic();
 
-
 		startTask(dropDrink);
 		// if theres a washable
 		if (washables[side] != -1) {
@@ -747,8 +746,10 @@ void solve_side() {
 	}
 	else {
 		startTask(measureWashable_r);
-		driveCm(60, 60, 2.0);
+		driveCm(60, 60, 5.0);
 		stopTask(measureWashable_r);
+
+		displayLogic();
 		driveCm(60, 60, 23.0);
 		brake(60, 28.5);
 
@@ -922,6 +923,7 @@ void drop() {
 }
 //_dropWashables
 void dropWashables() {
+	setMotorTarget(motor_grab, 120, 15);
 	resetMotorEncoder(motor_drive_right);
 	int current_pos = 0;
 	int centerToCenterCM = 11;
