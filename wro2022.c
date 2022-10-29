@@ -50,7 +50,13 @@ int borderRGB = 120;
 tHTCS2 color_left;
 tHTCS2 color_right;
 
+rgb __max;
+hsv __hsv;
 
+//_logLastWashableDect
+void logLastWashableDect() {
+	writeDebugStreamLine("[WASHVAL] H:%d S:%d V:%d SUM:%d", __hsv.h, __hsv.s, __hsv.v, __max.r + __max.g + __max.b);
+}
 
 //_displayLogic
 void displayLogic() {
@@ -61,6 +67,7 @@ void displayLogic() {
 	}
 	writeDebugStreamLine("[IND] B%d Y%d R%d G%d", colors[0], colors[1], colors[2], colors[3]);
 	writeDebugStreamLine("[WSH] %d %d %d %d", washables[0], washables[1],washables[2],washables[3]);
+
 }
 
 //_lfPDcm
@@ -466,7 +473,7 @@ void driveCmDropping(float leftSpeed, float rightSpeed, float distance)
 
 	if ((distance/(tireDiameter*PI)*360-getMotorEncoder(motor_drive_right)) >= 0) {
 		waitUntil(distance/(tireDiameter*PI)*360 <= getMotorEncoder(motor_drive_right));
-	} else {
+		} else {
 		waitUntil(distance/(tireDiameter*PI)*360 >= getMotorEncoder(motor_drive_right));
 	}
 
@@ -543,6 +550,18 @@ int hsvToColor(hsv in, bool nothing = true) {
 	if (in.h < 25 || in.h > 335)
 		return 2; // red
 	if (in.h >= 25)
+		return 1; // yellow
+	return 0; // basecase black
+}
+
+//_hsvToColorBlocks
+int hsvToColorBlocks(hsv in, int sum) {
+	if (sum < 40)
+		return -1; // nothing
+	//if (in.v < 30) return 0;
+	if (in.h < 25 || in.h > 335)
+		return 2; // red
+	if (in.h >= 30 && in.h <= 55)
 		return 1; // yellow
 	return 0; // basecase black
 }
@@ -644,9 +663,12 @@ task measureWashable_r()
 
 		hsv res;
 		rgb2hsv(max, res);
-
-		washables[measureIndex] = hsvToColor(res);
+		int sum = max.r + max.g + max.b;
+		washables[measureIndex] = hsvToColorBlocks(res, sum);
+		// writeDebugStreamLine("[MWASH RGB SUM] %d", sum);
 		writeDebugStreamLine("[MWASH] %d %d %d", res.h, res.s, res.v);
+		__max = max;
+		__hsv = res;
 	}
 }
 //_dropDrink()
@@ -655,7 +677,7 @@ task dropDrink() {
 	setMotorTarget(motor_dropper, -200, 20);
 	waitUntilMotorStop(motor_dropper);
 	delay(500);
-	setMotorTarget(motor_dropper, 0, 60);
+	setMotorTarget(motor_dropper, 2, 60);
 	waitUntilMotorStop(motor_dropper);
 	dropped = true;
 }
@@ -709,23 +731,24 @@ void solve_side() {
 	resetMotorEncoder(motor_drive_right);
 
 	// ADJUST HERE -------------------------------------------------------------------------- >
-	lfPDcm(15, 4);
+	lfPDcm(15, 4.5);
 	// ADJUST HERE FOR ~5mm of area next to grey table surrounding (long table direction) ---->
 
 	setMotorTarget(motor_grab, 435, 30);
 	stopTask(measureIndicators);
 	stopTask(measureIndicators_l);
 
-	turn(15, 40, 15, 21, 88.5);
+	turn(15, 40, 15, 21, 87);
 
 	resetMotorEncoder(motor_drive_right);
 
 	// if A side need drink
+	measureIndex = side;
 	if (colors[side + 1]) {
 		startTask(measureWashable_r);
 		brake(40, 2);
 		stopTask(measureWashable_r);
-
+		logLastWashableDect();
 		displayLogic();
 
 		startTask(dropDrink);
@@ -739,8 +762,6 @@ void solve_side() {
 		}
 		waitUntil(dropped);
 
-
-
 		resetMotorEncoder(motor_drive_right);
 		driveCm(-40, -40, 20.0);
 	}
@@ -748,7 +769,7 @@ void solve_side() {
 		startTask(measureWashable_r);
 		driveCm(60, 60, 5.0);
 		stopTask(measureWashable_r);
-
+		logLastWashableDect();
 		displayLogic();
 		driveCm(60, 60, 23.0);
 		brake(60, 28.5);
@@ -770,18 +791,19 @@ void solve_side() {
 			setMotorTarget(motor_grab, 120, 30);
 			waitUntilMotorStop(motor_grab);
 		}
-		driveCm(-39, -40, 32.0);
+		driveCm(-40, -40, 35.0);
 		setMotorTarget(motor_grab, 435, 20);
 		driveCm(-40, -40, 47.0);
 	}
 	// B side needs drink
+	measureIndex = side + 1;
 	resetMotorEncoder(motor_drive_right);
 	if (colors[side]) {
 		driveCm(-40, -40, 30.0);
-		measureIndex = side + 1;
 		startTask(measureWashable_r);
 		brake(-40, 35.5);
 		stopTask(measureWashable_r);
+		logLastWashableDect();
 		displayLogic();
 		dropped = false;
 		startTask(dropDrink);
@@ -792,18 +814,16 @@ void solve_side() {
 			setMotorTarget(motor_grab, 120, 30);
 			waitUntilMotorStop(motor_grab);
 			//setMotorTarget(motor_grab, 435, 20);
-			} else {
-
-		}
+			}
 		waitUntil(dropped);
 
 		} else {
 		// ball
 		driveCm(-39, -40, 30.0);
-		measureIndex = side + 1;
 		startTask(measureWashable_r);
 		driveCm(-40, -40, 36.0);
 		stopTask(measureWashable_r);
+		logLastWashableDect();
 		displayLogic();
 		driveCm(-40, -40, 46.0);
 		brake(-40, 50.6);
@@ -829,7 +849,7 @@ void solve_side() {
 
 		driveCm(40, 40, 16);
 	}
-	turn(40, 40, 0, 34, 88.0);
+	turn(40, 40, 0, 33.25, 88.0);
 }
 //_gotoSide2
 void gotoSide2() {
@@ -876,13 +896,16 @@ void gotoWashroom() {
 	rgb curr;
 
 	setMotorTarget(motor_grab, 30, 30);
-	lfPDline(30, true, true);
+	lfPDline(15, true, true);
 	turn(40, 60, 40, -tireDistance/2, 17.5);
-	turn(40, 60, 35, -70, 38.75);
-	turn(30, 60, 20, tireDistance/2, 56.5);
+	turn(40, 60, 35, -70, 37.5);
+	turn(30, 60, 20, tireDistance/2, 54.5);
 
 	//turn(30, 60, 20, tireDistance/2, 20.0);
 	brake(0, 0);
+	resetMotorEncoder(motor_drive_right);
+	driveCm(30, 30, 3);
+	brake(30, 5);
 	delay(200);
 
 	readSensor(&color_left);
@@ -894,7 +917,7 @@ void gotoWashroom() {
 	writeDebugStreamLine("[FRAME @ i0] %d %d %d", res.h, res.s, res.v);
 
 	resetMotorEncoder(motor_drive_right);
-	driveCm(-30, -30, 6);
+	driveCm(-30, -30, 11);
 	brake(-30, 8);
 	delay(200);
 
@@ -962,6 +985,25 @@ task main()
 	setMotorBrakeMode(motorD, motorBrake);
 	initSensor(&color_right, S4);
 	initSensor(&color_left, S3);
+
+	//rgb curr;
+	//while (true) {
+	//	readSensor(&color_right);
+	//	curr.r = (color_right.red+1);
+	//	curr.g = (color_right.green+1);
+	//	curr.b = (color_right.blue+1);
+
+	//	hsv res;
+	//	rgb2hsv(curr, res);
+	//	int sum = curr.r + curr.g + curr.b;
+	//	datalogDataGroupStart();
+	//	datalogAddValue(0, res.h);
+	//	datalogAddValue(1, res.s);
+	//	datalogAddValue(2, res.v);
+	//	datalogAddValue(3, sum);
+	//	datalogAddValue(4, hsvToColorBlocks(res, sum));
+	//	datalogDataGroupEnd();
+	//}
 	if (!readSensor(&color_right) || !readSensor(&color_left)) {
 		displayTextLine(4, "SENSOR INIT ERROR!!");
 		sleep(2000);
