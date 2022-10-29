@@ -659,18 +659,19 @@ void pickupBottles() {
 	setMotorTarget(motor_dropper, 140, 50);
 
 	turn(0, -40, 0, tireDistance/2, __amt);
-	turn(0, -40, -40, -tireDistance/2, (__amt+46)*0.10);
-	setMotorTarget(motor_grab, 435, 50);
-	turn(-40, -40, 0, -tireDistance/2, (__amt+45)*0.90);
+	turn(0, -40, -40, -tireDistance/2, (__amt+48)*0.10);
+	setMotorTarget(motor_grab, 520, 50);
+	turn(-40, -40, 0, -tireDistance/2, (__amt+48)*0.90);
 	delay(100);
 	resetMotorEncoder(motor_drive_right);
 	driveCm(-30, -30, 8);
 	brake(-30, 9.8);
 
-	setMotorTarget(motor_grab, 80, 20);
+	setMotorTarget(motor_grab, 60, 15);
 	waitUntilMotorStop(motor_grab);
-	wait1Msec(200);
-	setMotorTarget(motor_grab, 435, 30);
+	setMotorTarget(motor_grab, 120, 15);
+	waitUntilMotorStop(motor_grab);
+	setMotorTarget(motor_grab, 520, 30);
 	waitUntilMotorStop(motor_grab);
 	delay(200);
 
@@ -678,7 +679,7 @@ void pickupBottles() {
 	driveCm(29, 30, 8.5);
 	brake(30, 9.5);
 
-	setMotorTarget(motor_grab, 80, 15);
+	setMotorTarget(motor_grab, 60, 15);
 	waitUntilMotorStop(motor_grab);
 	setMotorTarget(motor_grab, 120, 15);
 	waitUntilMotorStop(motor_grab);
