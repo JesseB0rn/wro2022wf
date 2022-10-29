@@ -227,37 +227,6 @@ void lfPDacc(float speedStart, float speedEnd)
 	}
 }
 
-
-//_lfPDstart
-void lfPDstart(float speed, float distance)
-{
-	float kP = 0.15;
-	float kD = 10;
-	if(speed == 60)
-	{
-		kP = 0.15;
-		kD = 10;
-	}
-	float error = 0;
-	float lastError = 0;
-	float derivative = 0;
-	float correction = 0;
-	float time = 0;
-	while(distance >= getMotorEncoder(motor_drive_right)/360*PI*tireDiameter)
-	{
-		error = (32 - getColorReflected(line_follower_right)) * -1;
-		time = time1[timer1];
-		clearTimer(timer1);
-		derivative = error - lastError;
-		correction = error*kP + derivative*kD/time;
-		setMotorSpeed(motorB, speed + correction);
-		setMotorSpeed(motorC, speed - correction);
-		lastError = error;
-		waitUntil(time1[timer1] >= 8);
-	}
-}
-
-
 //_turn
 void turn(float speed1, float speed2, float speed3, float radius, float angle)
 {
@@ -479,24 +448,6 @@ void driveCmDropping(float leftSpeed, float rightSpeed, float distance)
 
 }
 
-
-//_compareRGB
-bool compareRGB(int redLow, int redHigh, int greenLow, int greenHigh, int blueLow, int blueHigh, int red, int green, int blue)
-{
-	bool correct = false;
-	if(red > redLow && red < redHigh)
-	{
-		if(green > greenLow && green < greenHigh)
-		{
-			if(blue > blueLow && blue < blueHigh)
-			{
-				correct = true;
-			}
-		}
-	}
-	return correct;
-}
-
 // _rgb2hsv
 void rgb2hsv(rgb in, hsv &out)
 {
@@ -704,12 +655,19 @@ task reset_start()
 
 // _pickupBottles
 void pickupBottles() {
-	turn(0, 40, 0, tireDistance/2, 125);
+	#define __amt 95
 	setMotorTarget(motor_dropper, 140, 50);
-	setMotorTarget(motor_grab, 435, 30);
-	turn(0, 40, 0, -tireDistance/2, 172);
 
-	setMotorTarget(motor_grab, 70, 20);
+	turn(0, -40, 0, tireDistance/2, __amt);
+	turn(0, -40, -40, -tireDistance/2, (__amt+46)*0.10);
+	setMotorTarget(motor_grab, 435, 50);
+	turn(-40, -40, 0, -tireDistance/2, (__amt+45)*0.90);
+	delay(100);
+	resetMotorEncoder(motor_drive_right);
+	driveCm(-30, -30, 8);
+	brake(-30, 9.8);
+
+	setMotorTarget(motor_grab, 80, 20);
 	waitUntilMotorStop(motor_grab);
 	wait1Msec(200);
 	setMotorTarget(motor_grab, 435, 30);
@@ -717,11 +675,15 @@ void pickupBottles() {
 	delay(200);
 
 	resetMotorEncoder(motor_drive_right);
-	driveCm(29, 30, 9.5);
+	driveCm(29, 30, 8.5);
 	brake(30, 9.5);
 
-	setMotorTarget(motor_grab, 70, 15);
+	setMotorTarget(motor_grab, 80, 15);
 	waitUntilMotorStop(motor_grab);
+	setMotorTarget(motor_grab, 120, 15);
+	waitUntilMotorStop(motor_grab);
+
+	turn(0, 60, 0, -tireDistance/2, 45);
 }
 // _solve_side
 void solve_side() {
@@ -1020,14 +982,9 @@ task main()
 
 
 
+	pickupBottles();
 
-
-	//pickupBottles();
-
-
-	//startTask(dropDrink);
-	//waitUntil(dropped);
-	//stopAllTasks()
+	stopAllTasks();
 
 	// unit test 2x side and path
 	setMotorTarget(motor_grab, 435, 20);
