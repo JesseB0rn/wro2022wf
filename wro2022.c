@@ -736,7 +736,7 @@ void solve_side() {
 		waitUntil(dropped);
 
 		resetMotorEncoder(motor_drive_right);
-		driveCm(-40, -40, 20.0);
+		driveCm(-39, -40, 20.0);
 	}
 	else {
 		startTask(measureWashable_r);
@@ -756,7 +756,7 @@ void solve_side() {
 		// if washable
 		resetMotorEncoder(motor_drive_right);
 		if (washables[side] != -1) {
-			driveCm(-40, -40, 21.5);
+			driveCm(-39.25, -40, 21.5);
 			brake(-40, 26.75);
 
 			setMotorTarget(motor_grab, 70, 30);
@@ -764,7 +764,7 @@ void solve_side() {
 			setMotorTarget(motor_grab, 120, 30);
 			waitUntilMotorStop(motor_grab);
 		}
-		driveCm(-40, -40, 35.0);
+		driveCm(-39.25, -40, 35.0);
 		setMotorTarget(motor_grab, 520, 20);
 		driveCm(-40, -40, 47.0);
 	}
