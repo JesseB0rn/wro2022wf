@@ -655,7 +655,7 @@ task reset_start()
 
 // _pickupBottles
 void pickupBottles() {
-	#define __amt 95
+#define __amt 95
 	setMotorTarget(motor_dropper, 140, 50);
 
 	turn(0, -40, 0, tireDistance/2, __amt);
@@ -787,7 +787,7 @@ void solve_side() {
 			setMotorTarget(motor_grab, 120, 30);
 			waitUntilMotorStop(motor_grab);
 			//setMotorTarget(motor_grab, 520, 20);
-			}
+		}
 		waitUntil(dropped);
 
 		} else {
@@ -872,10 +872,9 @@ void gotoWashroom() {
 	lfPDline(15, true, true);
 	turn(40, 60, 40, -tireDistance/2, 17.5);
 	turn(40, 60, 35, -70, 37.5);
-	turn(30, 60, 20, tireDistance/2, 54.5);
-
-	//turn(30, 60, 20, tireDistance/2, 20.0);
+	turn(30, 60, 20, tireDistance/2, 58.5);
 	brake(0, 0);
+
 	resetMotorEncoder(motor_drive_right);
 	driveCm(30, 30, 3);
 	brake(30, 5);
@@ -914,8 +913,8 @@ void drop() {
 	setMotorTarget(motor_dropper, -200, 60);
 	waitUntilMotorStop(motor_dropper);
 	delay(500);
-	setMotorTarget(motor_dropper, 0, 60);
-	waitUntilMotorStop(motor_dropper);
+	setMotorTarget(motor_dropper, -10, 60);
+	delay(500);
 }
 //_dropWashables
 void dropWashables() {
@@ -923,16 +922,19 @@ void dropWashables() {
 	resetMotorEncoder(motor_drive_right);
 	int current_pos = 0;
 	int centerToCenterCM = 11;
-	for (int i = 0; i < 4; i++) {
-		int value = washables[i];
-		if (value == -1) {
-			continue;
+	for (int i = 0; i < 5; i++) {
+		int t = 5.5;
+		if (i != 4) {
+			int value = washables[i];
+			if (value == -1) {
+				continue;
+			}
+			int index = 0;
+			while ( index < 3 && frames[index] != value ) {
+				++index;
+			}
+			t = (1 - ( index == 3 ? 1 : index )) * centerToCenterCM + 0.1;
 		}
-		int index = 0;
-		while ( index < 3 && frames[index] != value ) {
-			++index;
-		}
-		int t = (1 - ( index == 3 ? 1 : index )) * centerToCenterCM + 0.1;
 
 		writeDebugStreamLine("[Next Target] %d", t);
 		resetMotorEncoder(motor_drive_right);
@@ -942,12 +944,26 @@ void dropWashables() {
 			driveCm(30, 30, current_pos-t);
 		}
 		brake(0, 0);
-		drop();
+		if (i != 4) drop();
 
 		current_pos = t;
 	}
 }
 
+void end() {
+	turn(0, 40, 0, 0, 90);
+	resetMotorEncoder(motor_drive_right);
+	driveCm(-30, -30, -7);
+	driveCm(-15, -15, -10);
+	delay(400);
+	brake(0, 0);
+	resetMotorEncoder(motor_drive_right);
+	lfPDcm(15, 16);
+	speedChange(15, 40);
+	driveCm(40, 40, 36);
+	brake(40, 42);
+  turn(0, 40, 0, 0, 42);
+}
 
 // _main
 task main()
@@ -984,6 +1000,8 @@ task main()
 
 	gotoWashroom();
 	dropWashables();
+
+	end();
 
 	brake(0, 0);
 	delay(500);
