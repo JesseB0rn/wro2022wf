@@ -628,7 +628,7 @@ task dropDrink() {
 	setMotorTarget(motor_dropper, -200, 20);
 	waitUntilMotorStop(motor_dropper);
 	delay(500);
-	setMotorTarget(motor_dropper, 2, 60);
+	setMotorTarget(motor_dropper, 4, 60);
 	waitUntilMotorStop(motor_dropper);
 	dropped = true;
 }
@@ -687,8 +687,8 @@ void pickupBottles() {
 	turn(0, 60, 0, -tireDistance/2, 45);
 
 	resetMotorEncoder(motor_drive_right);
-	driveCm(60, 60, 31);
-	brake(60, 38);
+	driveCm(60, 60, 30);
+	brake(60, 36);
 	setMotorTarget(motor_grab, 520, 30);
 	turn(0, 60, 0, tireDistance/2, 45);
 	setMotorTarget(motor_grab, 520, 30);
@@ -935,10 +935,11 @@ void dropWashables() {
 		int t = (1 - ( index == 3 ? 1 : index )) * centerToCenterCM + 0.1;
 
 		writeDebugStreamLine("[Next Target] %d", t);
+		resetMotorEncoder(motor_drive_right);
 		if (t <= current_pos) {
-			driveCmDropping(-30, -30, t);
+			driveCm(-30, -30, current_pos-t);
 			} else if (t == current_pos) {} else {
-			driveCmDropping(30, 30, t);
+			driveCm(30, 30, current_pos-t);
 		}
 		brake(0, 0);
 		drop();
@@ -983,8 +984,6 @@ task main()
 
 	gotoWashroom();
 	dropWashables();
-
-
 
 	brake(0, 0);
 	delay(500);
