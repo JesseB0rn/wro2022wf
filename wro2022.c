@@ -172,60 +172,60 @@ void lfPDline(float speed, bool sensor1, bool sensor4)
 }
 
 
-//_lfPDacc
-void lfPDacc(float speedStart, float speedEnd)
-{
-	float kP = 0;
-	float kD = 0;
-	float error = 0;
-	float lastError = 0;
-	float derivative = 0;
-	float correction = 0;
-	float sum = 0;
-	float value_left = 0;
-	float value_right = 0;
-	float time = 0;
-	float accConstant = 0;
-	float currentSpeed = 0;
-	float counter = 0;
-	if(speedStart < speedEnd)
-	{
-		accConstant = 1;
-		} else {
-		accConstant = -1;
-	}
-	while(speedStart+accConstant*counter != speedEnd)
-	{
-		currentSpeed = speedStart+accConstant*counter;
-		if(currentSpeed < 6)
-		{
-			currentSpeed = 6;
-		}
-		kP = (LF_P_a*pow(currentSpeed - LF_P_u, 2) + LF_P_v);
-		kD = (LF_D_a*pow(currentSpeed - LF_D_u, 2) + LF_D_v);
-		//kP = pow(currentSpeed, 0.5)*0.024;
-		//kD = pow(currentSpeed, 0.5)*0.25;
-		value_left = getColorReflected(line_follower_left);
-		value_right = getColorReflected(line_follower_right);
-		error = value_left - value_right;
-		sum = value_left + value_right;
-		time = time1[timer1];
-		clearTimer(timer1);
-		derivative = error - lastError;
-		correction = error*kP + derivative*kD/time;
-		if(sum <= 55)
-		{
-			setMotorSpeed(motorB, currentSpeed);
-			setMotorSpeed(motorC, currentSpeed);
-			} else {
-			setMotorSpeed(motorB, currentSpeed + correction);
-			setMotorSpeed(motorC, currentSpeed - correction);
-		}
-		lastError = error;
-		waitUntil(time1[timer1] >= 5);
-		counter ++;
-	}
-}
+////_lfPDacc
+//void lfPDacc(float speedStart, float speedEnd)
+//{
+//	float kP = 0;
+//	float kD = 0;
+//	float error = 0;
+//	float lastError = 0;
+//	float derivative = 0;
+//	float correction = 0;
+//	float sum = 0;
+//	float value_left = 0;
+//	float value_right = 0;
+//	float time = 0;
+//	float accConstant = 0;
+//	float currentSpeed = 0;
+//	float counter = 0;
+//	if(speedStart < speedEnd)
+//	{
+//		accConstant = 1;
+//		} else {
+//		accConstant = -1;
+//	}
+//	while(speedStart+accConstant*counter != speedEnd)
+//	{
+//		currentSpeed = speedStart+accConstant*counter;
+//		if(currentSpeed < 6)
+//		{
+//			currentSpeed = 6;
+//		}
+//		kP = (LF_P_a*pow(currentSpeed - LF_P_u, 2) + LF_P_v);
+//		kD = (LF_D_a*pow(currentSpeed - LF_D_u, 2) + LF_D_v);
+//		//kP = pow(currentSpeed, 0.5)*0.024;
+//		//kD = pow(currentSpeed, 0.5)*0.25;
+//		value_left = getColorReflected(line_follower_left);
+//		value_right = getColorReflected(line_follower_right);
+//		error = value_left - value_right;
+//		sum = value_left + value_right;
+//		time = time1[timer1];
+//		clearTimer(timer1);
+//		derivative = error - lastError;
+//		correction = error*kP + derivative*kD/time;
+//		if(sum <= 55)
+//		{
+//			setMotorSpeed(motorB, currentSpeed);
+//			setMotorSpeed(motorC, currentSpeed);
+//			} else {
+//			setMotorSpeed(motorB, currentSpeed + correction);
+//			setMotorSpeed(motorC, currentSpeed - correction);
+//		}
+//		lastError = error;
+//		waitUntil(time1[timer1] >= 5);
+//		counter ++;
+//	}
+//}
 
 //_turn
 void turn(float speed1, float speed2, float speed3, float radius, float angle)
@@ -429,23 +429,6 @@ void driveCm(float leftSpeed, float rightSpeed, float distance)
 	setMotorSpeed(motor_drive_left, leftSpeed);
 	setMotorSpeed(motor_drive_right, rightSpeed);
 	waitUntil(abs(distance)/(tireDiameter*PI)*360 <= abs(getMotorEncoder(motor_drive_right)));
-}
-//_driveCmDropping
-void driveCmDropping(float leftSpeed, float rightSpeed, float distance)
-{
-	if(leftSpeed == rightSpeed)
-	{
-		setMotorSync(motor_drive_left, motor_drive_right, -100, leftSpeed);
-	}
-	setMotorSpeed(motor_drive_left, leftSpeed);
-	setMotorSpeed(motor_drive_right, rightSpeed);
-
-	if ((distance/(tireDiameter*PI)*360-getMotorEncoder(motor_drive_right)) >= 0) {
-		waitUntil(distance/(tireDiameter*PI)*360 <= getMotorEncoder(motor_drive_right));
-		} else {
-		waitUntil(distance/(tireDiameter*PI)*360 >= getMotorEncoder(motor_drive_right));
-	}
-
 }
 
 // _rgb2hsv
