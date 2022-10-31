@@ -697,7 +697,7 @@ void solve_side() {
 	lfPDcm(15, 4.5);
 	// ADJUST HERE FOR ~5mm of area next to grey table surrounding (long table direction) ---->
 
-	setMotorTarget(motor_grab, 435, 30);
+	setMotorTarget(motor_grab, 520, 30);
 	stopTask(measureIndicators);
 	stopTask(measureIndicators_l);
 
@@ -721,7 +721,7 @@ void solve_side() {
 			waitUntilMotorStop(motor_grab);
 			setMotorTarget(motor_grab, 120, 30);
 			waitUntilMotorStop(motor_grab);
-			setMotorTarget(motor_grab, 435, 20);
+			setMotorTarget(motor_grab, 520, 20);
 		}
 		waitUntil(dropped);
 
@@ -740,7 +740,7 @@ void solve_side() {
 		setMotorTarget(motor_grab, 135, 30);
 		waitUntilMotorStop(motor_grab);
 		delay(500);
-		setMotorTarget(motor_grab, 435, 20);
+		setMotorTarget(motor_grab, 520, 20);
 		waitUntilMotorStop(motor_grab);
 
 		// if washable
@@ -755,7 +755,7 @@ void solve_side() {
 			waitUntilMotorStop(motor_grab);
 		}
 		driveCm(-40, -40, 35.0);
-		setMotorTarget(motor_grab, 435, 20);
+		setMotorTarget(motor_grab, 520, 20);
 		driveCm(-40, -40, 47.0);
 	}
 	// B side needs drink
@@ -776,7 +776,7 @@ void solve_side() {
 			waitUntilMotorStop(motor_grab);
 			setMotorTarget(motor_grab, 120, 30);
 			waitUntilMotorStop(motor_grab);
-			//setMotorTarget(motor_grab, 435, 20);
+			//setMotorTarget(motor_grab, 520, 20);
 			}
 		waitUntil(dropped);
 
@@ -796,7 +796,7 @@ void solve_side() {
 		driveCm(10, 10, 2);
 		brake(0, 0);
 		delay(100);
-		setMotorTarget(motor_grab, 435, 20);
+		setMotorTarget(motor_grab, 520, 20);
 		waitUntilMotorStop(motor_grab);
 
 		if (washables[side + 1] != -1) {
@@ -831,7 +831,7 @@ void gotoSide2() {
 		turn(40, 60, 40, tireDistance/2, 25);
 		turn(40, 60, 40, -40, 45);
 		turn(40, 60, 40, tireDistance/2, 15);
-		setMotorTarget(motor_grab, 435, 30);
+		setMotorTarget(motor_grab, 520, 30);
 		//resetMotorEncoder(motor_drive_right);
 		//stopAllTasks();
 		resetMotorEncoder(motor_drive_right);
@@ -844,7 +844,7 @@ void gotoSide2() {
 		resetMotorEncoder(motor_drive_right);
 		lfPDcm(60, 19);
 		driveCm(60, 60, 40);
-		setMotorTarget(motor_grab, 435, 30);
+		setMotorTarget(motor_grab, 520, 30);
 		driveCm(60,60,90);
 		resetMotorEncoder(motor_drive_right);
 		lfPDcm(30, 15);
@@ -983,12 +983,12 @@ task main()
 
 
 
-	pickupBottles();
+	//pickupBottles();
 
-	stopAllTasks();
+	//stopAllTasks();
 
 	// unit test 2x side and path
-	setMotorTarget(motor_grab, 435, 20);
+	setMotorTarget(motor_grab, 520, 20);
 	waitUntilMotorStop(motor_grab);
 	delay(200);
 
