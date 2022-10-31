@@ -611,7 +611,7 @@ task dropDrink() {
 	setMotorTarget(motor_dropper, -200, 20);
 	waitUntilMotorStop(motor_dropper);
 	delay(500);
-	setMotorTarget(motor_dropper, 4, 60);
+	setMotorTarget(motor_dropper, -5, 60);
 	waitUntilMotorStop(motor_dropper);
 	dropped = true;
 }
@@ -972,8 +972,6 @@ task main()
 	eraseDisplay();
 	setLEDColor(ledOff);
 	delay(150);
-
-
 
 	pickupBottles();
 
