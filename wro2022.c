@@ -683,8 +683,9 @@ void pickupBottles() {
 	waitUntilMotorStop(motor_grab);
 	setMotorTarget(motor_grab, 120, 15);
 	waitUntilMotorStop(motor_grab);
-
+	setMotorTarget(motor_grab, 380, 30);
 	turn(0, 60, 0, -tireDistance/2, 45);
+	waitUntilMotorStop(motor_grab);
 }
 // _solve_side
 void solve_side() {
@@ -983,9 +984,9 @@ task main()
 
 
 
-	//pickupBottles();
+	pickupBottles();
 
-	//stopAllTasks();
+	stopAllTasks();
 
 	// unit test 2x side and path
 	setMotorTarget(motor_grab, 520, 20);
