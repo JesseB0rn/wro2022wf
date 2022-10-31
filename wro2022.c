@@ -685,7 +685,16 @@ void pickupBottles() {
 	waitUntilMotorStop(motor_grab);
 	setMotorTarget(motor_grab, 380, 30);
 	turn(0, 60, 0, -tireDistance/2, 45);
-	waitUntilMotorStop(motor_grab);
+
+	resetMotorEncoder(motor_drive_right);
+	driveCm(60, 60, 31);
+	brake(60, 38);
+	setMotorTarget(motor_grab, 520, 30);
+	turn(0, 60, 0, tireDistance/2, 45);
+	setMotorTarget(motor_grab, 520, 30);
+	resetMotorEncoder(motor_drive_right);
+	lfPDcm(40, 20);
+
 }
 // _solve_side
 void solve_side() {
@@ -950,24 +959,6 @@ task main()
 	initSensor(&color_right, S4);
 	initSensor(&color_left, S3);
 
-	//rgb curr;
-	//while (true) {
-	//	readSensor(&color_right);
-	//	curr.r = (color_right.red+1);
-	//	curr.g = (color_right.green+1);
-	//	curr.b = (color_right.blue+1);
-
-	//	hsv res;
-	//	rgb2hsv(curr, res);
-	//	int sum = curr.r + curr.g + curr.b;
-	//	datalogDataGroupStart();
-	//	datalogAddValue(0, res.h);
-	//	datalogAddValue(1, res.s);
-	//	datalogAddValue(2, res.v);
-	//	datalogAddValue(3, sum);
-	//	datalogAddValue(4, hsvToColorBlocks(res, sum));
-	//	datalogDataGroupEnd();
-	//}
 	if (!readSensor(&color_right) || !readSensor(&color_left)) {
 		displayTextLine(4, "SENSOR INIT ERROR!!");
 		sleep(2000);
@@ -986,22 +977,14 @@ task main()
 
 	pickupBottles();
 
-	stopAllTasks();
-
-	// unit test 2x side and path
-	setMotorTarget(motor_grab, 520, 20);
-	waitUntilMotorStop(motor_grab);
-	delay(200);
-
-	resetMotorEncoder(motor_drive_right);
-	lfPDcm(15, 10);
-
 	solve_side();
 	gotoSide2();
 	solve_side();
 
 	gotoWashroom();
 	dropWashables();
+
+
 
 	brake(0, 0);
 	delay(500);
