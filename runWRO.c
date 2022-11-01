@@ -638,7 +638,7 @@ task reset_start()
 void pickupSingle() {
 	setMotorTarget(motor_grab, 300, 30);
 	waitUntilMotorStop(motor_grab);
-	setMotorTarget(motor_grab, 60, 15);
+	setMotorTarget(motor_grab, 65, 15);
 	waitUntilMotorStop(motor_grab);
 	setMotorTarget(motor_grab, 120, 15);
 	waitUntilMotorStop(motor_grab);
@@ -674,9 +674,9 @@ void pickupBottles() {
 	resetMotorEncoder(motor_drive_right);
 	driveCm(60, 60, 28);
 	brake(60, 33.5);
-	setMotorTarget(motor_grab, 520, 30);
+	setMotorTarget(motor_grab, 520, 15);
 	turn(0, 60, 0, tireDistance/2, 45);
-	setMotorTarget(motor_grab, 520, 30);
+	setMotorTarget(motor_grab, 520, 15);
 	resetMotorEncoder(motor_drive_right);
 	lfPDcm(40, 20);
 
@@ -805,7 +805,13 @@ void solve_side() {
 			setMotorTarget(motor_grab, 70, 30);
 		}
 
-		driveCm(40, 40, 16);
+		driveCm(40, 40, 18);
+	}
+	if (side == 2) {
+		resetMotorEncoder(motor_drive_right);
+		driveCm(40, 40, 8);
+		turn(40, 40, 0, 24.5, 88.0);
+		return;
 	}
 	turn(40, 40, 0, 33.25, 88.0);
 }
@@ -908,7 +914,7 @@ void dropWashables() {
 	int current_pos = 0;
 	int centerToCenterCM = 11;
 	for (int i = 0; i < 5; i++) {
-		int t = 5.5;
+		int t = 4.75;
 		if (i != 4) {
 			int value = washables[i];
 			if (value == -1) {
@@ -936,7 +942,7 @@ void dropWashables() {
 }
 
 void end() {
-	turn(0, 40, 0, 0, 90);
+	turn(0, 40, 0, 0, 88.0);
 	resetMotorEncoder(motor_drive_right);
 	driveCm(-30, -30, -7);
 	driveCm(-15, -15, -10);
