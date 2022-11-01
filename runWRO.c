@@ -634,7 +634,15 @@ task reset_start()
 	reset = true;
 }
 
-
+//_pickupSingle
+void pickupSingle() {
+	setMotorTarget(motor_grab, 300, 30);
+	waitUntilMotorStop(motor_grab);
+	setMotorTarget(motor_grab, 60, 15);
+	waitUntilMotorStop(motor_grab);
+	setMotorTarget(motor_grab, 120, 15);
+	waitUntilMotorStop(motor_grab);
+}
 
 // _pickupBottles
 void pickupBottles() {
@@ -650,11 +658,8 @@ void pickupBottles() {
 	driveCm(-30, -30, 8);
 	brake(-30, 9.8);
 
-	setMotorTarget(motor_grab, 60, 15);
-	waitUntilMotorStop(motor_grab);
-	setMotorTarget(motor_grab, 120, 15);
-	waitUntilMotorStop(motor_grab);
-	setMotorTarget(motor_grab, 520, 30);
+	pickupSingle();
+	setMotorTarget(motor_grab, 510, 30);
 	waitUntilMotorStop(motor_grab);
 	delay(200);
 
@@ -662,16 +667,13 @@ void pickupBottles() {
 	driveCm(29, 30, 8.5);
 	brake(30, 9.5);
 
-	setMotorTarget(motor_grab, 60, 15);
-	waitUntilMotorStop(motor_grab);
-	setMotorTarget(motor_grab, 120, 15);
-	waitUntilMotorStop(motor_grab);
+	pickupSingle();
 	setMotorTarget(motor_grab, 380, 30);
 	turn(0, 60, 0, -tireDistance/2, 45);
 
 	resetMotorEncoder(motor_drive_right);
-	driveCm(60, 60, 30);
-	brake(60, 36);
+	driveCm(60, 60, 28);
+	brake(60, 33.5);
 	setMotorTarget(motor_grab, 520, 30);
 	turn(0, 60, 0, tireDistance/2, 45);
 	setMotorTarget(motor_grab, 520, 30);
