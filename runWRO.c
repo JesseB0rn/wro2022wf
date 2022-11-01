@@ -974,6 +974,7 @@ task main()
 	eraseDisplay();
 	setLEDColor(ledOff);
 	delay(150);
+	clearTimer(T4);
 
 	pickupBottles();
 
@@ -987,6 +988,8 @@ task main()
 	end();
 
 	brake(0, 0);
-	delay(500);
+	displayCenteredBigTextLine(4, "%f", time100[T4]/10);
+	writeDebugStreamLine("TIME: %f", time100[T4]/10);
+	delay(5000);
 	stopAllTasks();
 }
