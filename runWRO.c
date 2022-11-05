@@ -650,9 +650,9 @@ void pickupBottles() {
 	setMotorTarget(motor_dropper, 140, 50);
 
 	turn(0, -40, 0, tireDistance/2, __amt);
-	turn(0, -40, -40, -tireDistance/2, (__amt+48)*0.10);
+	turn(0, -40, -40, -tireDistance/2, (__amt+43)*0.10);
 	setMotorTarget(motor_grab, 520, 50);
-	turn(-40, -40, 0, -tireDistance/2, (__amt+48)*0.90);
+	turn(-40, -40, 0, -tireDistance/2, (__amt+43)*0.90);
 	delay(100);
 	resetMotorEncoder(motor_drive_right);
 	driveCm(-30, -30, 8);
@@ -673,7 +673,7 @@ void pickupBottles() {
 
 	resetMotorEncoder(motor_drive_right);
 	driveCm(60, 60, 28);
-	brake(60, 33.5);
+	brake(60, 35);
 	setMotorTarget(motor_grab, 520, 15);
 	turn(0, 60, 0, tireDistance/2, 45);
 	setMotorTarget(motor_grab, 520, 15);
@@ -692,7 +692,7 @@ void solve_side() {
 	lfPDcm(15, 4.5);
 	// ADJUST HERE FOR ~5mm of area next to grey table surrounding (long table direction) ---->
 
-	setMotorTarget(motor_grab, 520, 30);
+	//setMotorTarget(motor_grab, 520, 30);
 	stopTask(measureIndicators);
 	stopTask(measureIndicators_l);
 
