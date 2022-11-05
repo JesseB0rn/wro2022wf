@@ -696,7 +696,7 @@ void solve_side() {
 	stopTask(measureIndicators);
 	stopTask(measureIndicators_l);
 
-	turn(15, 40, 15, 21, 87);
+	turn(15, 40, 15, 21, 87.5);
 
 	resetMotorEncoder(motor_drive_right);
 
@@ -741,6 +741,7 @@ void solve_side() {
 		// if washable
 		resetMotorEncoder(motor_drive_right);
 		if (washables[side] != -1) {
+			setMotorTarget(motor_grab, 360, 30);
 			driveCm(-39.25, -40, 21.5);
 			brake(-40, 26.75);
 
