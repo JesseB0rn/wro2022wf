@@ -467,7 +467,7 @@ void rgb2hsv(rgb in, hsv &out)
 		return;
 	}
 	if( max > 0.0 ) { // NOTE: if Max is == 0, this divide would cause a crash
-		out.s = (delta / max);                  // s
+		out.s = (delta / max) * 100;                  // s
 		} else {
 		// if max is 0, then r = g = b = 0
 		// s = 0, h is undefined
@@ -719,7 +719,9 @@ void solve_side() {
 
 	resetMotorEncoder(motor_drive_right);
 
-	int curl = side == 1 ? -1 : 0;
+	//_curva/_drift/_curl
+	int curva = side == 1 ? -1 : -1;
+	//               yb ^  rg^
 
 	// if A side need drink
 	measureIndex = side;
@@ -747,7 +749,7 @@ void solve_side() {
 		}
 		waitUntil(dropped);
 
-		driveCm(-40 - curl, -40, 25.0);
+		driveCm(-40 - curva, -40, 25.0);
 	}
 	else {
 		startTask(measureWashable_r);
@@ -770,7 +772,7 @@ void solve_side() {
 		resetMotorEncoder(motor_drive_right);
 		if (washables[side] != -1) {
 			setMotorTarget(motor_grab, 360, 30);
-			driveCm(-40 - curl, -40, 21.5);
+			driveCm(-40 - curva, -40, 21.5);
 			brake(-40, 26.75);
 
 			setMotorTarget(motor_grab, 70, 30);
@@ -778,9 +780,9 @@ void solve_side() {
 			setMotorTarget(motor_grab, 120, 30);
 			waitUntilMotorStop(motor_grab);
 		}
-		driveCm(-40 - curl, -40, 31.0);
+		driveCm(-40 - curva, -40, 31.0);
 		setMotorTarget(motor_grab, 520, 20);
-		driveCm(-40 - curl, -40, 47.0);
+		driveCm(-40 - curva, -40, 47.0);
 	}
 	// B side needs drink
 	measureIndex = side + 1;
