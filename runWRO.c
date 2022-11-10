@@ -47,7 +47,7 @@ bool loop_stop = false;
 bool reset = false;
 
 
-int borderRGB = 120;
+int borderRGB = 130;
 
 tHTCS2 color_left;
 tHTCS2 color_right;
@@ -71,7 +71,7 @@ void displayLogic() {
 	writeDebugStreamLine("[WSH] %d %d %d %d", washables[0], washables[1],washables[2],washables[3]);
 
 	for(int i = 0; i < 4; i++) {
-			writeDebugStreamLine("RGB for washblock %d: RGB %d %d %d", i, washables_rgb.r, washables_rgb.g, washables_rgb.b);
+		writeDebugStreamLine("RGB for washblock %d: RGB %d %d %d", i, washables_rgb.r, washables_rgb.g, washables_rgb.b);
 	}
 }
 
@@ -509,10 +509,10 @@ int hsvToColorBlocks(hsv in, int sum) {
 	if (sum < 40)
 		return -1;
 	if (in.h < 25 || in.h > 335) {
-			return sum > 50 ? 2 : 0;
+		return sum > 50 ? 2 : 0;
 	}
 
-	if (sum < 75) return 0;
+	if (sum < 75 || in.s < 30) return 0;
 	if (in.h >= 30 && in.h <= 55)
 		return 1;
 	return 0;
@@ -532,9 +532,9 @@ task measureIndicators()
 	while(true)
 	{
 		readSensor(&color_right);
-		curr.r = (color_right.red+1);
-		curr.g = (color_right.green+1);
-		curr.b = (color_right.blue+1);
+		curr.r = (color_right.red);
+		curr.g = (color_right.green);
+		curr.b = (color_right.blue);
 		if(curr.r > max.r)
 		{
 			max.r = curr.r;
@@ -548,6 +548,7 @@ task measureIndicators()
 			max.b = curr.b;
 		}
 		displayTextLine(0, "R: %d %d %d", max.r, max.g, max.b);
+		writeDebugStreamLine("IND: R: %d %d %d", max.r, max.g, max.b);
 		colors[side + 1] = (max.r + max.g + max.b) >  borderRGB;
 	}
 }
@@ -580,6 +581,7 @@ task measureIndicators_l()
 			max.b = curr.b;
 		}
 		displayTextLine(1, "L: %d %d %d", max.r, max.g, max.b);
+		writeDebugStreamLine("IND: L: %d %d %d", max.r, max.g, max.b);
 		colors[side] = (max.r + max.g + max.b) >  borderRGB;
 	}
 }
@@ -700,7 +702,7 @@ void pickupBottles() {
 	lfPDcm(40, 20);
 
 }
-// _solve_side
+//_solve_side
 void solve_side() {
 	startTask(measureIndicators);
 	startTask(measureIndicators_l);
@@ -708,7 +710,7 @@ void solve_side() {
 	resetMotorEncoder(motor_drive_right);
 
 	// ADJUST HERE -------------------------------------------------------------------------- >
-	lfPDcm(15, side == 0 ? 4.5: 5.5);
+	lfPDcm(15, side == 0 ? 5.5: 5.5);
 	// ADJUST HERE FOR ~5mm of area next to grey table surrounding (long table direction) ---->
 
 	//setMotorTarget(motor_grab, 520, 30);
@@ -720,8 +722,8 @@ void solve_side() {
 	resetMotorEncoder(motor_drive_right);
 
 	//_curva/_drift/_curl
-	int curva = side == 1 ? -1 : -1;
-	//               yb ^  rg^
+	int curva = side == 0 ? 0 : 0;
+	//                    yb ^  rg^
 
 	// if A side need drink
 	measureIndex = side;
@@ -734,9 +736,9 @@ void solve_side() {
 		displayLogic();
 
 		resetMotorEncoder(motor_drive_right);
-		if (washables[side] != -1) setMotorTarget(motor_grab, 360, 30);
-		driveCm(-15, -15, 4);
-		brake(-15, 5.5);
+		if (washables[side] != -1) setMotorTarget(motor_grab, 380, 30);
+		driveCm(-15, -15, 3.5);
+		brake(-15, 4.75);
 
 		startTask(dropDrink);
 		// if theres a washable
@@ -771,7 +773,7 @@ void solve_side() {
 		// if washable
 		resetMotorEncoder(motor_drive_right);
 		if (washables[side] != -1) {
-			setMotorTarget(motor_grab, 360, 30);
+			setMotorTarget(motor_grab, 380, 30);
 			driveCm(-40 - curva, -40, 21.5);
 			brake(-40, 26.75);
 
@@ -839,11 +841,11 @@ void solve_side() {
 			setMotorTarget(motor_grab, 70, 30);
 		}
 
-		driveCm(40, 40, 18);
+		driveCm(40, 40, 17.5);
 	}
 	if (side == 2) {
 		resetMotorEncoder(motor_drive_right);
-		driveCm(40, 40, 8);
+		driveCm(40, 40, 8.5);
 		turn(40, 40, 0, 24.5, 88.0);
 		return;
 	}
@@ -897,12 +899,12 @@ void gotoWashroom() {
 	lfPDline(15, true, true);
 	turn(40, 60, 40, -tireDistance/2, 17.5);
 	turn(40, 60, 35, -70, 37.5);
-	turn(30, 60, 20, tireDistance/2, 58.5);
+	turn(30, 60, 20, tireDistance/2, 55.5);
 	brake(0, 0);
 
 	resetMotorEncoder(motor_drive_right);
 	driveCm(30, 30, 3);
-	brake(30, 5);
+  brake(30, 5);
 	delay(200);
 
 	readSensor(&color_left);
@@ -935,7 +937,7 @@ void gotoWashroom() {
 void drop() {
 	setMotorTarget(motor_dropper, -75, 30);
 	waitUntilMotorStop(motor_dropper);
-	setMotorTarget(motor_dropper, -200, 60);
+	setMotorTarget(motor_dropper, -200, 50);
 	waitUntilMotorStop(motor_dropper);
 	delay(500);
 	setMotorTarget(motor_dropper, -10, 60);
@@ -987,7 +989,7 @@ void end() {
 	speedChange(15, 40);
 	driveCm(40, 40, 36);
 	brake(40, 42);
-  turn(0, 40, 0, 0, 42);
+	turn(0, 40, 0, 0, 42);
 }
 
 // _main
@@ -1028,8 +1030,9 @@ task main()
 	end();
 
 	brake(0, 0);
-	displayCenteredBigTextLine(4, "%f", time100[T4]/10);
-	writeDebugStreamLine("TIME: %f", time100[T4]/10);
-	delay(5000);
+	displayCenteredBigTextLine(4, "%d.0 s", time100[T4]/10);
+	eraseDisplay();
+	writeDebugStreamLine("TIME: %d", time100[T4]/10);
+	delay(10000);
 	stopAllTasks();
 }
