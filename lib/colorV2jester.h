@@ -5,7 +5,7 @@
 
 typedef struct {
 	int color, r,g,b, w;
-} htresult;
+} rgbw;
 bool waitForI2CBus(tSensors link)
 {
 	while (true)
@@ -28,24 +28,26 @@ bool waitForI2CBus(tSensors link)
 	}
 	return false;
 }
-void getRGBW(tSensors port, htresult &res) {
+void getRGBW(tSensors port, rgbw &res) {
 	ubyte rpl[5];
 	byte msg[3] = {2, 0x02, 0x42};
 	sendI2CMsg(port, &msg[0], 5);
 	waitForI2CBus(port);
 	readI2CReply(port, &rpl[0], 5);
-	for (int i = 0; i < 5; i++) {
-		writeDebugStream("%d ", rpl[i]);
-	}
-	writeDebugStream("\n");
+	//for (int i = 0; i < 5; i++) {
+	//	writeDebugStream("%d ", (short)rpl[i]);
+	//}
+	//writeDebugStream("\n");
 
 	res.color = rpl[0];
-	res.r = rpl[1];
-	res.g = rpl[2];
-	res.b = rpl[3];
-	res.w = rpl[4];
+	res.r = (short)rpl[1];
+	res.g = (short)rpl[2];
+	res.b = (short)rpl[3];
+	res.w = (short)rpl[4];
 }
-
+/**
+	Check for correct hardware spec
+**/
 bool verifySetupHTCOL(tSensors port) {
 	char reply[32];
 	byte msg[3] = {2, 0x02, 0x00};
@@ -58,4 +60,13 @@ bool verifySetupHTCOL(tSensors port) {
 	}
 	writeDebugStream("\n");
 	return true;
+}
+/**
+	Chooses max of each component
+**/
+void rgbwMax(rgbw &max, rgbw &curr) {
+		max.r = max2(max.r, curr.r);
+		max.g = max2(max.g, curr.g);
+		max.b = max2(max.b, curr.b);
+		max.w = max2(max.w, curr.w);
 }
