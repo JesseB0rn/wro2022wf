@@ -14,12 +14,6 @@
 #define color_right S4
 
 typedef struct {
-	float r;       // a fraction between 0 and 1
-	float g;       // a fraction between 0 and 1
-	float b;       // a fraction between 0 and 1
-} rgb;
-
-typedef struct {
 	float h;       // angle in degrees
 	float s;       // a fraction between 0 and 1
 	float v;       // a fraction between 0 and 1
@@ -43,7 +37,6 @@ bool colors[4];
 int washables[4];
 int frames[3];
 
-rgb washables_rgb[4];
 
 int side = 0;
 int measureIndex = 0;
@@ -53,16 +46,6 @@ bool reset = false;
 
 
 int borderRGB = 130;
-
-
-
-rgb __max;
-hsv __hsv;
-
-//_logLastWashableDect
-void logLastWashableDect() {
-	writeDebugStreamLine("[WASHVAL] H:%d S:%d V:%d SUM:%d", __hsv.h, __hsv.s, __hsv.v, __max.r + __max.g + __max.b);
-}
 
 //_displayLogic
 void displayLogic() {
@@ -74,9 +57,6 @@ void displayLogic() {
 	writeDebugStreamLine("[IND] B%d Y%d R%d G%d", colors[0], colors[1], colors[2], colors[3]);
 	writeDebugStreamLine("[WSH] %d %d %d %d", washables[0], washables[1],washables[2],washables[3]);
 
-	for(int i = 0; i < 4; i++) {
-		writeDebugStreamLine("RGB for washblock %d: RGB %d %d %d", i, washables_rgb.r, washables_rgb.g, washables_rgb.b);
-	}
 }
 
 //_lfPDcm
@@ -179,62 +159,6 @@ void lfPDline(float speed, bool sensor1, bool sensor4)
 		waitUntil(time1[timer1] >= 5);
 	}
 }
-
-
-////_lfPDacc
-//void lfPDacc(float speedStart, float speedEnd)
-//{
-//	float kP = 0;
-//	float kD = 0;
-//	float error = 0;
-//	float lastError = 0;
-//	float derivative = 0;
-//	float correction = 0;
-//	float sum = 0;
-//	float value_left = 0;
-//	float value_right = 0;
-//	float time = 0;
-//	float accConstant = 0;
-//	float currentSpeed = 0;
-//	float counter = 0;
-//	if(speedStart < speedEnd)
-//	{
-//		accConstant = 1;
-//		} else {
-//		accConstant = -1;
-//	}
-//	while(speedStart+accConstant*counter != speedEnd)
-//	{
-//		currentSpeed = speedStart+accConstant*counter;
-//		if(currentSpeed < 6)
-//		{
-//			currentSpeed = 6;
-//		}
-//		kP = (LF_P_a*pow(currentSpeed - LF_P_u, 2) + LF_P_v);
-//		kD = (LF_D_a*pow(currentSpeed - LF_D_u, 2) + LF_D_v);
-//		//kP = pow(currentSpeed, 0.5)*0.024;
-//		//kD = pow(currentSpeed, 0.5)*0.25;
-//		value_left = getColorReflected(line_follower_left);
-//		value_right = getColorReflected(line_follower_right);
-//		error = value_left - value_right;
-//		sum = value_left + value_right;
-//		time = time1[timer1];
-//		clearTimer(timer1);
-//		derivative = error - lastError;
-//		correction = error*kP + derivative*kD/time;
-//		if(sum <= 55)
-//		{
-//			setMotorSpeed(motorB, currentSpeed);
-//			setMotorSpeed(motorC, currentSpeed);
-//			} else {
-//			setMotorSpeed(motorB, currentSpeed + correction);
-//			setMotorSpeed(motorC, currentSpeed - correction);
-//		}
-//		lastError = error;
-//		waitUntil(time1[timer1] >= 5);
-//		counter ++;
-//	}
-//}
 
 //_turn
 void turn(float speed1, float speed2, float speed3, float radius, float angle)
@@ -570,9 +494,6 @@ task measureWashable_r()
 		washables[measureIndex] = hsvToColorBlocks(hsvres, sum);
 		// writeDebugStreamLine("[MWASH RGB SUM] %d", sum);
 		writeDebugStreamLine("[MWASH] %d %d %d", hsvres.h, hsvres.s, hsvres.v);
-		__max = max;
-		__hsv = hsvres;
-		washables_rgb[measureIndex] = max;
 	}
 }
 //_dropDrink()
@@ -681,7 +602,7 @@ void solve_side() {
 		brake(40, 7);
 		stopTask(measureWashable_r);
 		delay(200);
-		logLastWashableDect();
+
 		displayLogic();
 
 		resetMotorEncoder(motor_drive_right);
@@ -706,7 +627,7 @@ void solve_side() {
 		startTask(measureWashable_r);
 		driveCm(60, 60, 5.0);
 		stopTask(measureWashable_r);
-		logLastWashableDect();
+
 		displayLogic();
 		driveCm(60, 60, 23.0);
 		driveCm(60, 60, 28.5);
@@ -743,7 +664,7 @@ void solve_side() {
 		startTask(measureWashable_r);
 		brake(-40, 35.5);
 		stopTask(measureWashable_r);
-		logLastWashableDect();
+
 		displayLogic();
 		dropped = false;
 		startTask(dropDrink);
@@ -763,7 +684,7 @@ void solve_side() {
 		startTask(measureWashable_r);
 		driveCm(-40, -40, 36.0);
 		stopTask(measureWashable_r);
-		logLastWashableDect();
+
 		displayLogic();
 		driveCm(-40, -40, 46.0);
 		driveCm(-40, -40, 50.6);
