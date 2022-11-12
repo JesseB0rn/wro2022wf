@@ -54,7 +54,7 @@ void rgb2hsv(rgbw _in, hsv &out)
 
 //_hsvToColor
 int hsvToColorFrames(hsv in, float w) {
-	if (in.s < 0.375 || w < 65)
+	if (in.s < 0.35 && w < 65)
 		return 0;
 
 	if (in.h < 25 || in.h > 335)
@@ -69,7 +69,7 @@ int hsvToColorFrames(hsv in, float w) {
 int hsvToColorBlocks(hsv in, float w) {
 	if (w < 20)
 		return -1;
-	if (w < 110 /*|| in.s < 0.375*/)
+	if (w < 100 || in.s < 0.2)
 		return 0;
 
 	if (in.h < 25 || in.h > 335)

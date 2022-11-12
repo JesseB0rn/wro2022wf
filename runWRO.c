@@ -677,7 +677,7 @@ void gotoSide2() {
 		brake(40, 48);
 
 		turn(40, 60, 40, tireDistance/2, 25);
-		turn(40, 60, 40, -40, 45);
+		turn(40, 60, 40, -40, 48);
 		turn(40, 60, 40, tireDistance/2, 15);
 		setMotorTarget(motor_grab, 520, 30);
 		//resetMotorEncoder(motor_drive_right);
@@ -756,7 +756,7 @@ void dropWashables() {
 	int current_pos = 0;
 	int centerToCenterCM = 11;
 	for (int i = 0; i < 5; i++) {
-		int t = 4.75;
+		int t = 4.25;
 		if (i != 4) {
 			int value = washables[i];
 			if (value == -1) {
@@ -786,15 +786,15 @@ void dropWashables() {
 void end() {
 	turn(0, 40, 0, 0, 88.0);
 	resetMotorEncoder(motor_drive_right);
-	driveCm(-30, -30, -7);
-	driveCm(-15, -15, -10);
-	delay(400);
+	driveCm(-30, -30, -6);
+	//driveCm(-15, -15, -10);
+	//delay(400);
 	brake(0, 0);
 	resetMotorEncoder(motor_drive_right);
-	lfPDcm(15, 16);
+	lfPDcm(15, 7);
 	speedChange(15, 40);
-	driveCm(40, 40, 36);
-	brake(40, 42);
+	driveCm(40, 40, 28);
+	brake(40, 34);
 	turn(0, 40, 0, 0, 42);
 }
 
