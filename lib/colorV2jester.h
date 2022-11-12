@@ -4,7 +4,8 @@
 #pragma systemFile
 
 typedef struct {
-	int color, r,g,b, w;
+	int color;
+	float r,g,b, w;
 } rgbw;
 bool waitForI2CBus(tSensors link)
 {
@@ -53,7 +54,7 @@ bool verifySetupHTCOL(tSensors port) {
 	byte msg[3] = {2, 0x02, 0x00};
 	sendI2CMsg(port, &msg[0], 32);
 	waitForI2CBus(port);
-	if(!readI2CReply(port, &reply[0], 32)) return false;
+	readI2CReply(port, &reply[0], 32);
 	writeDebugStream("[VERIFY SENSOR] ");
 	for (int i = 0; i < 32; i++) {
 		writeDebugStream("%c", reply[i]);
@@ -64,9 +65,21 @@ bool verifySetupHTCOL(tSensors port) {
 /**
 	Chooses max of each component
 **/
-void rgbwMax(rgbw &max, rgbw &curr) {
+void rgbwMaxComponent(rgbw &max, rgbw &curr) {
 		max.r = max2(max.r, curr.r);
 		max.g = max2(max.g, curr.g);
 		max.b = max2(max.b, curr.b);
 		max.w = max2(max.w, curr.w);
+}
+
+/**
+	Chooses max of each component
+**/
+void rgbwMax(rgbw &max, rgbw &curr) {
+		if ((max.r+max.g+max.b) <= (curr.r+curr.g+curr.b)) {
+			max.r = curr.r;
+			max.g = curr.g;
+			max.b = curr.b;
+			max.w = curr.w;
+		}
 }
