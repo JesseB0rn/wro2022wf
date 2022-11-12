@@ -42,9 +42,6 @@ int measureIndex = 0;
 bool loop_stop = false;
 bool reset = false;
 
-
-int borderRGB = 120;
-
 //_displayLogic
 void displayLogic() {
 	for(int i = 0; i < 4; i++)
@@ -375,11 +372,12 @@ void driveMs(float leftSpeed, float rightSpeed, int ms)
 
 
 
-
+bool enableMeasure = true;
 
 //_measureIndicators
 task measureIndicators()
 {
+	enableMeasure = true;
 	rgbw curr;
 	rgbw max;
 	max.r = 0;
@@ -387,18 +385,20 @@ task measureIndicators()
 	max.b = 0;
 	max.w = 0;
 
-	while(true)
+	while(enableMeasure)
 	{
 		getRGBW(color_right, curr);
 		rgbwMaxComponent(max, curr);
 
 		// writeDebugStreamLine("IND R: %d %d %d %d", max.r, max.g, max.b, max.w);
-		colors[side + 1] = (max.r + max.g + max.b) >  borderRGB;
+		colors[side + 1] = (max.w) >  100;
 	}
+	writeDebugStreamLine("IND R: SUM: %d  W: %d", (max.r + max.g + max.b), max.w);
 }
 //_measureIndicators_l
 task measureIndicators_l()
 {
+	enableMeasure  = true;
 	rgbw curr;
 	rgbw max;
 	max.r = 0;
@@ -406,13 +406,14 @@ task measureIndicators_l()
 	max.b = 0;
 	max.w = 0;
 
-	while(true)
+	while(enableMeasure)
 	{
 		getRGBW(color_left, curr);
 		rgbwMaxComponent(max, curr);
 		// writeDebugStreamLine("IND L: %d %d %d %d", max.r, max.g, max.b, max.w);
-		colors[side] = (max.r + max.g + max.b) >  borderRGB;
+		colors[side] = (max.w) >  100;
 	}
+	writeDebugStreamLine("IND L: SUM: %d  W: %d", (max.r + max.g + max.b), max.w);
 }
 
 //_measureWashable_r
@@ -525,15 +526,14 @@ void solve_side() {
 	// ADJUST HERE FOR ~5mm of area next to grey table surrounding (long table direction) ---->
 
 	//setMotorTarget(motor_grab, 520, 30);
-	stopTask(measureIndicators);
-	stopTask(measureIndicators_l);
+	enableMeasure = false;
 
-	turn(15, 40, 40, 21, side == 0 ? 88.0 : 88.0);
+	turn(15, 40, 15, 21, side == 0 ? 89.0 : 89.0);
 
 	resetMotorEncoder(motor_drive_right);
 
 	//_curva/_drift/_curl
-	int curva = side==0 ? 0 : -1;
+	int curva = side==0 ? -1 : -1;
 	//                    yb ^  rg^
 
 	// if A side need drink
@@ -566,12 +566,12 @@ void solve_side() {
 	}
 	else {
 		startTask(measureWashable_r);
-		driveCm(60, 60, 5.0);
+		driveCm(57, 60, 5.0);
 		stopTask(measureWashable_r);
 
 		displayLogic();
-		driveCm(60, 60, 23.0);
-		driveCm(60, 60, 28.5);
+		driveCm(57, 60, 23.0);
+		driveCm(57, 60, 28.5);
 		//brake(60, 28.5);
 		driveMs(20, 20, 300);
 		brake(0,0);
