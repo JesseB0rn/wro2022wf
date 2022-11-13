@@ -444,7 +444,7 @@ task dropDrink() {
 	setMotorTarget(motor_dropper, -200, 20);
 	waitUntilMotorStop(motor_dropper);
 	delay(500);
-	setMotorTarget(motor_dropper, -5, 60);
+	setMotorTarget(motor_dropper, -5, 40);
 	waitUntilMotorStop(motor_dropper);
 	dropped = true;
 }
@@ -741,7 +741,7 @@ void gotoWashroom() {
 }
 //_drop
 void drop() {
-	setMotorTarget(motor_dropper, -75, 30);
+	setMotorTarget(motor_dropper, -100, 30);
 	waitUntilMotorStop(motor_dropper);
 	setMotorTarget(motor_dropper, -200, 55);
 	waitUntilMotorStop(motor_dropper);
@@ -791,10 +791,10 @@ void end() {
 	//delay(400);
 	brake(0, 0);
 	resetMotorEncoder(motor_drive_right);
-	lfPDcm(15, 7);
+	lfPDcm(15, 9.5);
 	speedChange(15, 40);
-	driveCm(40, 40, 28);
-	brake(40, 34);
+	driveCm(40, 40, 28.5);
+	brake(40, 34.5);
 	turn(0, 40, 0, 0, 42);
 }
 

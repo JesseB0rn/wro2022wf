@@ -69,7 +69,7 @@ int hsvToColorFrames(hsv in, float w) {
 int hsvToColorBlocks(hsv in, float w) {
 	if (w < 20)
 		return -1;
-	if (w < 100 || in.s < 0.2)
+	if (w < 100 || in.s < 0.25)
 		return 0;
 
 	if (in.h < 25 || in.h > 335)
