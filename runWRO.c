@@ -35,12 +35,74 @@ bool colors[4];
 int washables[4];
 int frames[3];
 
+rgbw maxValuesBlocks[4];
+hsv maxHSVBlocks[4];
 
 int side = 0;
 int measureIndex = 0;
 
 bool loop_stop = false;
 bool reset = false;
+
+//rankLB
+void rankLB(int* res) {
+
+	// memset(res,0,4 * sizeof(*res));
+	memset(res,0,4 * 4);
+
+	for(int i = 0; i < 4; i++) {
+		res[i] = -2;
+	}
+	// ranking function
+	// 1. kleinsten w-wert finden
+	int smallest_wi, smallest_w;
+	smallest_w = 255;
+	smallest_wi = -1;
+	rgbw *val;
+
+
+	for(int i = 0; i < 4; i++) {
+			val = &maxValuesBlocks[i];
+			if (val->w < smallest_w) {
+				smallest_w = val->w;
+				smallest_wi = i;
+			}
+	}
+	res[smallest_wi] = -1;
+
+	// 2. kleinsten s-wert finden für schwarz
+	hsv *hsvval;
+	float smallest_s = 1.0;
+	int smallest_si = -1;
+	for(int i = 0; i < 4; i++) {
+			hsvval = &maxHSVBlocks[i];
+			if (hsvval->s < smallest_s && i != smallest_wi) {
+				smallest_s = hsvval->s;
+				smallest_si = i;
+			}
+	}
+	res[smallest_si] = 0;
+
+	// 3. find the red one that wasn't picked yet
+	for(int i = 0; i < 4; i++) {
+			hsvval = &maxHSVBlocks[i];
+			if ((hsvval->h < 25 || hsvval->h > 335) && res[i] == -2) {
+				res[i] = 2;
+				break;
+			}
+	}
+
+	// 4. the last one is yellow
+	for(int i = 0; i < 4; i++) {
+
+			if (res[i] == -2) {
+				res[i] = 1;
+				break;
+			}
+	}
+
+	writeDebugStreamLine("LAUNDRY BLOCKS: %d %d %d %d", res[0], res[1], res[2], res[3]);
+}
 
 //_displayLogic
 void displayLogic() {
@@ -436,6 +498,13 @@ task measureWashable_r()
 		washables[measureIndex] = hsvToColorBlocks(hsvres, max.w);
 		// writeDebugStreamLine("[MWASH RGB SUM] %d", sum);
 		writeDebugStreamLine("[MWASH] %d %f %f %d", hsvres.h, hsvres.s, hsvres.v, max.w);
+		maxValuesBlocks[measureIndex].r = max.r;
+		maxValuesBlocks[measureIndex].g = max.g;
+		maxValuesBlocks[measureIndex].b = max.b;
+		maxValuesBlocks[measureIndex].w = max.w;
+		maxHSVBlocks[measureIndex].h = hsvres.h;
+		maxHSVBlocks[measureIndex].s = hsvres.s;
+		maxHSVBlocks[measureIndex].v = hsvres.v;
 	}
 }
 //_dropDrink()
@@ -471,8 +540,10 @@ task reset_start()
 void pickupSingle() {
 	setMotorTarget(motor_grab, 300, 30);
 	waitUntilMotorStop(motor_grab);
-	setMotorTarget(motor_grab, 65, 15);
+	setMotorTarget(motor_grab, 70, 15);
 	waitUntilMotorStop(motor_grab);
+	setMotorTarget(motor_grab, 65, 15);
+	delay(20);
 	setMotorTarget(motor_grab, 120, 15);
 	waitUntilMotorStop(motor_grab);
 }
@@ -492,8 +563,9 @@ void pickupBottles() {
 	brake(-30, 9.8);
 
 	pickupSingle();
-	setMotorTarget(motor_grab, 510, 30);
+	setMotorTarget(motor_grab, 480, 30);
 	waitUntilMotorStop(motor_grab);
+	setMotorTarget(motor_grab, 510, 30);
 	delay(200);
 
 	resetMotorEncoder(motor_drive_right);
@@ -533,7 +605,8 @@ void solve_side() {
 	resetMotorEncoder(motor_drive_right);
 
 	//_curva/_drift/_curl
-	int curva = side==0 ? -1 : -1;
+	// int curva = side == 0 ? -1 : -1;
+	int curva = 0;
 	//                    yb ^  rg^
 
 	// if A side need drink
@@ -571,7 +644,7 @@ void solve_side() {
 
 		displayLogic();
 		driveCm(57, 60, 23.0);
-		driveCm(57, 60, 28.5);
+		driveCm(57, 60, 27.75);
 		//brake(60, 28.5);
 		driveMs(20, 20, 300);
 		brake(0,0);
@@ -751,6 +824,8 @@ void drop() {
 }
 //_dropWashables
 void dropWashables() {
+	int lb[4];
+	rankLB(lb);
 	setMotorTarget(motor_grab, 120, 15);
 	resetMotorEncoder(motor_drive_right);
 	int current_pos = 0;
@@ -758,7 +833,7 @@ void dropWashables() {
 	for (int i = 0; i < 5; i++) {
 		int t = 4.25;
 		if (i != 4) {
-			int value = washables[i];
+			int value = lb[i];
 			if (value == -1) {
 				continue;
 			}
@@ -786,7 +861,7 @@ void dropWashables() {
 void end() {
 	turn(0, 40, 0, 0, 88.0);
 	resetMotorEncoder(motor_drive_right);
-	driveCm(-30, -30, -6);
+	driveCm(-30, -30, -5);
 	//driveCm(-15, -15, -10);
 	//delay(400);
 	brake(0, 0);
@@ -795,7 +870,7 @@ void end() {
 	speedChange(15, 40);
 	driveCm(40, 40, 28.5);
 	brake(40, 34.5);
-	turn(0, 40, 0, 0, 42);
+	turn(0, 40, 0, 0, 41);
 }
 
 // _main
@@ -824,7 +899,6 @@ task main()
 	solve_side();
 	gotoSide2();
 	solve_side();
-
 	gotoWashroom();
 	dropWashables();
 
