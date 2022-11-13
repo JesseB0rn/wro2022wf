@@ -217,6 +217,49 @@ void lfPDline(float speed, bool sensor1, bool sensor4)
 	}
 }
 
+//_lfPDend
+void lfPDend(float speed)
+{
+	float kP = 0;
+	float kD = 0;
+	float error = 0;
+	float lastError = 0;
+	float derivative = 0;
+	float correction = 0;
+	float sum = 0;
+	float value_left = 0;
+	float value_right = 0;
+	float time = 0;
+	loop_stop = false;
+	if(speed == 15)
+	{
+		kP = 0.1;
+		kD = 1.5;
+		} else {
+		kP = LF_P_a*pow(speed - LF_P_u, 2) + LF_P_v;
+		kD = LF_D_a*pow(speed - LF_D_u, 2) + LF_D_v;
+	}
+	while(loop_stop == false)
+	{
+		value_left = getColorReflected(line_follower_left);
+		value_right = getColorReflected(line_follower_right);
+		error = value_left - value_right;
+		sum = value_left + value_right;
+		time = time1[timer1];
+		clearTimer(timer1);
+		derivative = error  - lastError;
+		correction = error*kP + derivative*kD/time;
+
+			setMotorSpeed(motorB, speed + correction);
+			setMotorSpeed(motorC, speed - correction);
+		lastError = error;
+
+		loop_stop = (sum >= 120);
+
+		waitUntil(time1[timer1] >= 5);
+	}
+}
+
 //_turn
 void turn(float speed1, float speed2, float speed3, float radius, float angle)
 {
@@ -432,8 +475,6 @@ void driveMs(float leftSpeed, float rightSpeed, int ms)
 	delay(ms);
 }
 
-
-
 bool enableMeasure = true;
 
 //_measureIndicators
@@ -644,7 +685,7 @@ void solve_side() {
 
 		displayLogic();
 		driveCm(57, 60, 23.0);
-		driveCm(57, 60, 27.75);
+		driveCm(57, 60, 26.0);
 		//brake(60, 28.5);
 		driveMs(20, 20, 300);
 		brake(0,0);
@@ -861,16 +902,16 @@ void dropWashables() {
 void end() {
 	turn(0, 40, 0, 0, 88.0);
 	resetMotorEncoder(motor_drive_right);
-	driveCm(-30, -30, -5);
-	//driveCm(-15, -15, -10);
-	//delay(400);
+	driveCm(-30, -30, -4);
 	brake(0, 0);
 	resetMotorEncoder(motor_drive_right);
-	lfPDcm(15, 9.5);
+	lfPDcm(15, 8);
+	lfPDend(15);
+	resetMotorEncoder(motor_drive_right);
 	speedChange(15, 40);
-	driveCm(40, 40, 28.5);
-	brake(40, 34.5);
-	turn(0, 40, 0, 0, 41);
+	driveCm(40, 40, 18.0);
+	brake(40, 23.0);
+	turn(0, 40, 0, 0, 44);
 }
 
 // _main
