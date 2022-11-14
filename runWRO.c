@@ -17,6 +17,8 @@
 #define color_left S3
 #define color_right S4
 
+#define borderW 90
+
 float LF_P_a = 0.000065;
 float LF_P_u = 45;
 float LF_P_v = 0.13;
@@ -494,7 +496,7 @@ task measureIndicators()
 		rgbwMaxComponent(max, curr);
 
 		// writeDebugStreamLine("IND R: %d %d %d %d", max.r, max.g, max.b, max.w);
-		colors[side + 1] = (max.w) >  100;
+		colors[side + 1] = (max.w) >  borderW;
 	}
 	writeDebugStreamLine("IND R: SUM: %d  W: %d", (max.r + max.g + max.b), max.w);
 }
@@ -514,7 +516,7 @@ task measureIndicators_l()
 		getRGBW(color_left, curr);
 		rgbwMaxComponent(max, curr);
 		// writeDebugStreamLine("IND L: %d %d %d %d", max.r, max.g, max.b, max.w);
-		colors[side] = (max.w) >  100;
+		colors[side] = (max.w) >  borderW;
 	}
 	writeDebugStreamLine("IND L: SUM: %d  W: %d", (max.r + max.g + max.b), max.w);
 }
@@ -646,8 +648,8 @@ void solve_side() {
 	resetMotorEncoder(motor_drive_right);
 
 	//_curva/_drift/_curl
-	// int curva = side == 0 ? -1 : -1;
-	int curva = 0;
+	int curva = side == 0 ? 0 : -1;
+	//int curva = 0;
 	//                    yb ^  rg^
 
 	// if A side need drink
@@ -715,9 +717,9 @@ void solve_side() {
 	measureIndex = side + 1;
 	resetMotorEncoder(motor_drive_right);
 	if (colors[side]) {
-		driveCm(-40, -40, 30.0);
+		driveCm(-40, -40, 33.0);
 		startTask(measureWashable_r);
-		brake(-40, 35.5);
+		brake(-40, 36.75);
 		stopTask(measureWashable_r);
 
 		displayLogic();
