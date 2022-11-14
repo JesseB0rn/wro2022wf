@@ -37,13 +37,6 @@ int frames[3];
 rgbw maxValuesBlocks[4];
 hsv maxHSVBlocks[4];
 
-
-
-
-
-
-
-
 // rankLB
 void rankLB(int *res)
 {
