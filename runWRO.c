@@ -32,17 +32,16 @@ int measureIndex = 0;
 
 // LB and Frames colors
 bool colors[4];
-int washables[4];
-int frames[3];
+LBColor washables[4];
+LBColor frames[3];
 rgbw maxValuesBlocks[4];
 hsv maxHSVBlocks[4];
 
 // rankLB
-void rankLB(int *res)
+void rankLB(LBColor *res)
 {
-
-	// memset(res,0,4 * sizeof(*res));
-	memset(res, 0, 4 * 4);
+	// ASSUMPTION int uses 0x04 bytes and we are going thru 4 LBs
+	memset(res, 0, 4 * 0x04);
 
 	for (int i = 0; i < 4; i++)
 	{
@@ -504,7 +503,7 @@ void dropLB() {
 }
 //_dropLBs
 void dropLBs() {
-	int lb[4];
+	LBColor lb[4];
 	rankLB(lb);
 	setMotorTarget(motor_grab, 120, 15);
 	resetMotorEncoder(motor_drive_right);
