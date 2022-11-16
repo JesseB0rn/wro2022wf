@@ -6,6 +6,8 @@ typedef struct {
 	float v;       // a fraction between 0 and 1
 } hsv;
 
+typedef int LBColor;
+
 // _rgb2hsv
 void rgb2hsv(rgbw _in, hsv &out)
 {
@@ -53,7 +55,7 @@ void rgb2hsv(rgbw _in, hsv &out)
 }
 
 //_hsvToColor
-int hsvToColorFrames(hsv in, float w) {
+LBColor hsvToColorFrames(hsv in, float w) {
 	if (in.s < 0.35 && w < 65)
 		return 0;
 
@@ -66,7 +68,7 @@ int hsvToColorFrames(hsv in, float w) {
 }
 
 //_hsvToColorBlocks
-int hsvToColorBlocks(hsv in, float w) {
+LBColor hsvToColorBlocks(hsv in, float w) {
 	if (w < 20)
 		return -1;
 	if (w < 100 || in.s < 0.25)

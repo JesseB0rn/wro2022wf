@@ -11,6 +11,7 @@
 #include "lib/minmaxclip.h"
 #include "lib/colorV2jester.h"
 #include "lib/hsvjester.h"
+#include "lib/driveModule.h"
 
 #pragma debuggerWindows("debugStream");
 
@@ -19,40 +20,31 @@
 
 #define borderW 90
 
-float LF_P_a = 0.000065;
-float LF_P_u = 45;
-float LF_P_v = 0.13;
-float LF_D_a = 0.0018;
-float LF_D_u = 35;
-float LF_D_v = 6.3;
-
+// FLAGS for ITC
 bool dropped = false;
+bool enableMeasure = true;
+bool reset = false;
 
-float tireDiameter = 6.24;
-float tireDistance = 17.20;
-float brakeCons = 0.08;
-float brakeConsTurn = 0.11;
+// solveSide side effect
+int side = 0;
+// measureLB side effect
+int measureIndex = 0;
 
+// LB and Frames colors
 bool colors[4];
-int washables[4];
-int frames[3];
-
+LBColor washables[4];
+LBColor frames[3];
 rgbw maxValuesBlocks[4];
 hsv maxHSVBlocks[4];
 
-int side = 0;
-int measureIndex = 0;
+// rankLB
+void rankLB(LBColor *res)
+{
+	// ASSUMPTION int uses 0x04 bytes and we are going thru 4 LBs
+	memset(res, 0, 4 * 0x04);
 
-bool loop_stop = false;
-bool reset = false;
-
-//rankLB
-void rankLB(int* res) {
-
-	// memset(res,0,4 * sizeof(*res));
-	memset(res,0,4 * 4);
-
-	for(int i = 0; i < 4; i++) {
+	for (int i = 0; i < 4; i++)
+	{
 		res[i] = -2;
 	}
 	// ranking function
@@ -62,422 +54,68 @@ void rankLB(int* res) {
 	smallest_wi = -1;
 	rgbw *val;
 
-
-	for(int i = 0; i < 4; i++) {
-			val = &maxValuesBlocks[i];
-			if (val->w < smallest_w) {
-				smallest_w = val->w;
-				smallest_wi = i;
-			}
+	for (int i = 0; i < 4; i++)
+	{
+		val = &maxValuesBlocks[i];
+		if (val->w < smallest_w)
+		{
+			smallest_w = val->w;
+			smallest_wi = i;
+		}
 	}
 	res[smallest_wi] = -1;
 
-	// 2. kleinsten s-wert finden für schwarz
+	// 2. kleinsten s-wert finden fï¿½r schwarz
 	hsv *hsvval;
 	float smallest_s = 1.0;
 	int smallest_si = -1;
-	for(int i = 0; i < 4; i++) {
-			hsvval = &maxHSVBlocks[i];
-			if (hsvval->s < smallest_s && i != smallest_wi) {
-				smallest_s = hsvval->s;
-				smallest_si = i;
-			}
+	for (int i = 0; i < 4; i++)
+	{
+		hsvval = &maxHSVBlocks[i];
+		if (hsvval->s < smallest_s && i != smallest_wi)
+		{
+			smallest_s = hsvval->s;
+			smallest_si = i;
+		}
 	}
 	res[smallest_si] = 0;
 
 	// 3. find the red one that wasn't picked yet
-	for(int i = 0; i < 4; i++) {
-			hsvval = &maxHSVBlocks[i];
-			if ((hsvval->h < 25 || hsvval->h > 335) && res[i] == -2) {
-				res[i] = 2;
-				break;
-			}
+	for (int i = 0; i < 4; i++)
+	{
+		hsvval = &maxHSVBlocks[i];
+		if ((hsvval->h < 25 || hsvval->h > 335) && res[i] == -2)
+		{
+			res[i] = 2;
+			break;
+		}
 	}
 
 	// 4. the last one is yellow
-	for(int i = 0; i < 4; i++) {
+	for (int i = 0; i < 4; i++)
+	{
 
-			if (res[i] == -2) {
-				res[i] = 1;
-				break;
-			}
+		if (res[i] == -2)
+		{
+			res[i] = 1;
+			break;
+		}
 	}
 
 	writeDebugStreamLine("LAUNDRY BLOCKS: %d %d %d %d", res[0], res[1], res[2], res[3]);
 }
 
 //_displayLogic
-void displayLogic() {
-	for(int i = 0; i < 4; i++)
+void displayLogic()
+{
+	for (int i = 0; i < 4; i++)
 	{
 		displayTextLine(i, "INDI %d: %d", i, colors[i]);
-		displayTextLine(i+4, "WASH %d: %d", i, washables[i]);
+		displayTextLine(i + 4, "WASH %d: %d", i, washables[i]);
 	}
 	writeDebugStreamLine("[IND] B%d Y%d R%d G%d", colors[0], colors[1], colors[2], colors[3]);
-	writeDebugStreamLine("[WSH] %d %d %d %d", washables[0], washables[1],washables[2],washables[3]);
-
+	writeDebugStreamLine("[WSH] %d %d %d %d", washables[0], washables[1], washables[2], washables[3]);
 }
-
-//_lfPDcm
-void lfPDcm(float speed, float distance)
-{
-	float kP = 0;
-	float kD = 0;
-	float error = 0;
-	float lastError = 0;
-	float derivative = 0;
-	float correction = 0;
-	float sum = 0;
-	float value_left = 0;
-	float value_right = 0;
-	float time = 0;
-	if(speed == 15)
-	{
-		kP = 0.1;
-		kD = 1.5;
-		} else {
-		kP = LF_P_a*pow(speed - LF_P_u, 2) + LF_P_v;
-		kD = LF_D_a*pow(speed - LF_D_u, 2) + LF_D_v;
-	}
-	while(distance >= getMotorEncoder(motor_drive_right)/360*PI*tireDiameter)
-	{
-		value_left = getColorReflected(line_follower_left);
-		value_right = getColorReflected(line_follower_right);
-		error = value_left - value_right;
-		sum = value_left + value_right;
-		time = time1[timer1];
-		clearTimer(timer1);
-		derivative = error - lastError;
-		correction = error*kP + derivative*kD/time;
-		if(sum <= 55)
-		{
-			setMotorSpeed(motorB, speed);
-			setMotorSpeed(motorC, speed);
-			} else {
-			setMotorSpeed(motorB, speed + correction);
-			setMotorSpeed(motorC, speed - correction);
-		}
-		lastError = error;
-		waitUntil(time1[timer1] >= 5);
-	}
-}
-
-
-//_lfPDline
-void lfPDline(float speed, bool sensor1, bool sensor4)
-{
-	float kP = 0;
-	float kD = 0;
-	float error = 0;
-	float lastError = 0;
-	float derivative = 0;
-	float correction = 0;
-	float sum = 0;
-	float value_left = 0;
-	float value_right = 0;
-	float time = 0;
-	loop_stop = false;
-	if(speed == 15)
-	{
-		kP = 0.1;
-		kD = 1.5;
-		} else {
-		kP = LF_P_a*pow(speed - LF_P_u, 2) + LF_P_v;
-		kD = LF_D_a*pow(speed - LF_D_u, 2) + LF_D_v;
-	}
-	while(loop_stop == false)
-	{
-		value_left = getColorReflected(line_follower_left);
-		value_right = getColorReflected(line_follower_right);
-		error = value_left - value_right;
-		sum = value_left + value_right;
-		time = time1[timer1];
-		clearTimer(timer1);
-		derivative = error  - lastError;
-		correction = error*kP + derivative*kD/time;
-		if(sum <= 55)
-		{
-			setMotorSpeed(motorB, speed);
-			setMotorSpeed(motorC, speed);
-			} else {
-			setMotorSpeed(motorB, speed + correction);
-			setMotorSpeed(motorC, speed - correction);
-		}
-		lastError = error;
-		if(sensor1 == true && sensor4 == true)
-		{
-			loop_stop = (sum <= 40);
-			} else {
-			if(sensor1 == true)
-			{
-				loop_stop = value_right <= 15;
-				} else {
-				loop_stop = value_left <= 15;
-			}
-		}
-		waitUntil(time1[timer1] >= 5);
-	}
-}
-
-//_lfPDend
-void lfPDend(float speed)
-{
-	float kP = 0;
-	float kD = 0;
-	float error = 0;
-	float lastError = 0;
-	float derivative = 0;
-	float correction = 0;
-	float sum = 0;
-	float value_left = 0;
-	float value_right = 0;
-	float time = 0;
-	loop_stop = false;
-	if(speed == 15)
-	{
-		kP = 0.1;
-		kD = 1.5;
-		} else {
-		kP = LF_P_a*pow(speed - LF_P_u, 2) + LF_P_v;
-		kD = LF_D_a*pow(speed - LF_D_u, 2) + LF_D_v;
-	}
-	while(loop_stop == false)
-	{
-		value_left = getColorReflected(line_follower_left);
-		value_right = getColorReflected(line_follower_right);
-		error = value_left - value_right;
-		sum = value_left + value_right;
-		time = time1[timer1];
-		clearTimer(timer1);
-		derivative = error  - lastError;
-		correction = error*kP + derivative*kD/time;
-
-			setMotorSpeed(motorB, speed + correction);
-			setMotorSpeed(motorC, speed - correction);
-		lastError = error;
-
-		loop_stop = (sum >= 120);
-
-		waitUntil(time1[timer1] >= 5);
-	}
-}
-
-//_turn
-void turn(float speed1, float speed2, float speed3, float radius, float angle)
-{
-	float speedBrake = 0;
-	int counter = 0;
-	float rotataionsB = 0;
-	float rotataionsC = 0;
-	float error = 0;
-	float lastError = 0;
-	float Derivative = 0;
-	float kP = 0.012;
-	float kD = 0.05;
-	float Correction = 0;
-	float AbsRadius = abs(radius);
-	float degrees = abs(2*PI*(AbsRadius+tireDistance/2)/(tireDiameter*PI)*angle);
-	float left_rightRatio = (AbsRadius-tireDistance/2)/(AbsRadius+tireDistance/2);
-	resetMotorEncoder(motor_drive_left);
-	resetMotorEncoder(motor_drive_right);
-	if(radius < 0)
-	{
-		if(speed1 <= speed2)
-		{
-			while(speed1+1.8*counter < speed2)
-			{
-				rotataionsB = getMotorEncoder(motor_drive_left)*(-1);
-				rotataionsC = getMotorEncoder(motor_drive_right);
-				error = abs(rotataionsC*left_rightRatio)-abs(rotataionsB);
-				Correction = error*kP;
-				setMotorSpeed(motor_drive_left, (speed1+1.8*counter)*left_rightRatio*(1+Correction));
-				setMotorSpeed(motor_drive_right, (speed1+1.8*counter)*(1-Correction));
-				wait1Msec(5);
-				counter ++;
-			}
-			} else {
-			while(speed1-1.8*counter > speed2)
-			{
-				rotataionsB = getMotorEncoder(motor_drive_left)*(-1);
-				rotataionsC = getMotorEncoder(motor_drive_right);
-				error = abs(rotataionsC*left_rightRatio)-abs(rotataionsB);
-				Correction = error*kP;
-				setMotorSpeed(motor_drive_left, (speed1-1.8*counter)*left_rightRatio*(1+Correction));
-				setMotorSpeed(motor_drive_right, (speed1-1.8*counter)*(1-Correction));
-				wait1Msec(5);
-				counter ++;
-			}
-		}
-		if(speed3 < speed2)
-		{
-			while(degrees-abs(((speed2-speed3)*(speed2+speed3))/2*brakeConsTurn) > abs(getMotorEncoder(motor_drive_right)))
-			{
-				rotataionsB = getMotorEncoder(motor_drive_left)*(-1);
-				rotataionsC = getMotorEncoder(motor_drive_right);
-				error = abs(rotataionsC*left_rightRatio)-abs(rotataionsB);
-				Derivative = error - lastError;
-				Correction = error*kP + Derivative*kD;
-				setMotorSpeed(motor_drive_left, speed2*left_rightRatio*(1+Correction));
-				setMotorSpeed(motor_drive_right, speed2*(1-Correction));
-				lastError = error;
-			}
-			while(degrees-abs(getMotorEncoder(motor_drive_right)) > 3)
-			{
-				speedBrake = sqrt(2*(degrees-abs(getMotorEncoder(motor_drive_right)))/brakeConsTurn+pow(speed3,2))*speed2/abs(speed2);
-				rotataionsB = getMotorEncoder(motor_drive_left)*(-1);
-				rotataionsC = getMotorEncoder(motor_drive_right);
-				setMotorSpeed(motor_drive_left, speedBrake*left_rightRatio);
-				setMotorSpeed(motor_drive_right, speedBrake);
-			}
-			} else {
-			while(abs(getMotorEncoder(motor_drive_right)) <= degrees)
-			{
-				rotataionsB = getMotorEncoder(motor_drive_left)*(-1);
-				rotataionsC = getMotorEncoder(motor_drive_right);
-				error = abs(rotataionsC*left_rightRatio)-abs(rotataionsB);
-				Derivative = error - lastError;
-				Correction = error*kP + Derivative*kD;
-				setMotorSpeed(motor_drive_left, speed2*left_rightRatio*(1+Correction));
-				setMotorSpeed(motor_drive_right, speed2*(1-Correction));
-				lastError = error;
-			}
-		}
-		} else {
-		if(speed1 <= speed2)
-		{
-			while(speed1+1.8*counter < speed2)
-			{
-				rotataionsB = getMotorEncoder(motor_drive_left)*(-1);
-				rotataionsC = getMotorEncoder(motor_drive_right);
-				error = abs(rotataionsB*left_rightRatio)-abs(rotataionsC);
-				Correction = error*kP;
-				setMotorSpeed(motor_drive_left, (speed1+1.8*counter)*(1-Correction));
-				setMotorSpeed(motor_drive_right, (speed1+1.8*counter)*left_rightRatio*(1+Correction));
-				wait1Msec(5);
-				counter ++;
-			}
-			} else {
-			while(speed1-1.8*counter > speed2)
-			{
-				rotataionsB = getMotorEncoder(motor_drive_left)*(-1);
-				rotataionsC = getMotorEncoder(motor_drive_right);
-				error = abs(rotataionsB*left_rightRatio)-abs(rotataionsC);
-				Correction = error*kP;
-				setMotorSpeed(motor_drive_left, (speed1-1.8*counter)*(1-Correction));
-				setMotorSpeed(motor_drive_right, (speed1-1.8*counter)*left_rightRatio*(1+Correction));
-				wait1Msec(5);
-				counter ++;
-			}
-		}
-		if(speed3 < speed2)
-		{
-			while(degrees-abs(((speed2-speed3)*(speed2+speed3))/2*brakeConsTurn) > abs(getMotorEncoder(motor_drive_left)))
-			{
-				rotataionsB = getMotorEncoder(motor_drive_left)*(-1);
-				rotataionsC = getMotorEncoder(motor_drive_right);
-				error = abs(rotataionsB*left_rightRatio)-abs(rotataionsC);
-				Derivative = error - lastError;
-				Correction = error*kP + Derivative*kD;
-				setMotorSpeed(motor_drive_left, speed2*(1-Correction));
-				setMotorSpeed(motor_drive_right, speed2*left_rightRatio*(1+Correction));
-				lastError = error;
-			}
-			while(degrees-abs(getMotorEncoder(motor_drive_left)) > 3)
-			{
-				speedBrake = sqrt(2*(degrees-abs(getMotorEncoder(motor_drive_left)))/brakeConsTurn+pow(speed3,2))*speed2/abs(speed2);
-				rotataionsB = getMotorEncoder(motor_drive_left)*(-1);
-				rotataionsC = getMotorEncoder(motor_drive_right);
-				setMotorSpeed(motor_drive_left, speedBrake);
-				setMotorSpeed(motor_drive_right, speedBrake*left_rightRatio);
-			}
-			} else {
-			while(abs(getMotorEncoder(motor_drive_left)) <= degrees)
-			{
-				rotataionsB = getMotorEncoder(motor_drive_left)*(-1);
-				rotataionsC = getMotorEncoder(motor_drive_right);
-				error = abs(rotataionsB*left_rightRatio)-abs(rotataionsC);
-				Derivative = error - lastError;
-				Correction = error*kP + Derivative*kD;
-				setMotorSpeed(motor_drive_left, speed2*(1-Correction));
-				setMotorSpeed(motor_drive_right, speed2*left_rightRatio*(1+Correction));
-				lastError = error;
-			}
-		}
-	}
-	if(speed3 == 0)
-	{
-		setMotorSpeed(motor_drive_left, 0);
-		setMotorSpeed(motor_drive_right, 0);
-	}
-}
-
-
-//_brake
-void brake(float speed, float distance)
-{
-	float degrees = distance/(tireDiameter*PI)*360;
-	float speedBrake = speed;
-	setMotorSync(motor_drive_left, motor_drive_right, -100, speed);
-	waitUntil(abs(degrees)-abs((speed*(speed+1))/2*brakeCons) <= abs(getMotorEncoder(motor_drive_right)));
-	while(abs(degrees)-abs(getMotorEncoder(motor_drive_right)) > 2)
-	{
-		speedBrake = (-1+sqrt(1+8*(degrees-abs(getMotorEncoder(motor_drive_right)))/brakeCons))/2*speed/abs(speed);
-		setMotorSync(motor_drive_left, motor_drive_right, -100, speedBrake);
-	}
-	setMotorSpeed(motor_drive_left, 0);
-	setMotorSpeed(motor_drive_right, 0);
-	wait1Msec(10);
-}
-
-
-//_speedChange
-void speedChange(float startSpeed, float endSpeed)
-{
-	int counter = 0;
-	if(startSpeed <= endSpeed)
-	{
-		while(startSpeed+1.8*counter < endSpeed)
-		{
-			setMotorSync(motor_drive_left, motor_drive_right, -100, startSpeed+1.8*counter);
-			wait1Msec(5);
-			counter ++;
-		}
-		} else {
-		while(startSpeed-1.8*counter > endSpeed)
-		{
-			setMotorSync(motor_drive_left, motor_drive_right, -100, startSpeed-1.8*counter);
-			wait1Msec(5);
-			counter ++;
-		}
-	}
-	setMotorSync(motor_drive_left, motor_drive_right, -100, endSpeed);
-}
-
-
-//_driveCm
-void driveCm(float leftSpeed, float rightSpeed, float distance)
-{
-	if(leftSpeed == rightSpeed)
-	{
-		setMotorSync(motor_drive_left, motor_drive_right, -100, leftSpeed);
-	}
-	setMotorSpeed(motor_drive_left, leftSpeed);
-	setMotorSpeed(motor_drive_right, rightSpeed);
-	waitUntil(abs(distance)/(tireDiameter*PI)*360 <= abs(getMotorEncoder(motor_drive_right)));
-}
-//_driveMs
-void driveMs(float leftSpeed, float rightSpeed, int ms)
-{
-	if(leftSpeed == rightSpeed)
-	{
-		setMotorSync(motor_drive_left, motor_drive_right, -100, leftSpeed);
-	}
-	setMotorSpeed(motor_drive_left, leftSpeed);
-	setMotorSpeed(motor_drive_right, rightSpeed);
-	delay(ms);
-}
-
-bool enableMeasure = true;
 
 //_measureIndicators
 task measureIndicators()
@@ -521,8 +159,8 @@ task measureIndicators_l()
 	writeDebugStreamLine("IND L: SUM: %d  W: %d", (max.r + max.g + max.b), max.w);
 }
 
-//_measureWashable_r
-task measureWashable_r()
+//_measureLB
+task measureLB()
 {
 	rgbw curr;
 	rgbw max;
@@ -561,8 +199,8 @@ task dropDrink() {
 	dropped = true;
 }
 
-// _reset_start
-task reset_start()
+// _resetStart
+task resetStart()
 {
 	setMotorSpeed(motor_dropper, 10);
 	setMotorSpeed(motor_grab, -25);
@@ -579,8 +217,8 @@ task reset_start()
 	reset = true;
 }
 
-//_pickupSingle
-void pickupSingle() {
+//_pickupSingleBottle
+void pickupSingleBottle() {
 	setMotorTarget(motor_grab, 300, 30);
 	waitUntilMotorStop(motor_grab);
 	setMotorTarget(motor_grab, 70, 15);
@@ -605,7 +243,7 @@ void pickupBottles() {
 	driveCm(-30, -30, 8);
 	brake(-30, 9.8);
 
-	pickupSingle();
+	pickupSingleBottle();
 	setMotorTarget(motor_grab, 480, 30);
 	waitUntilMotorStop(motor_grab);
 	setMotorTarget(motor_grab, 510, 30);
@@ -615,7 +253,7 @@ void pickupBottles() {
 	driveCm(29, 30, 8.5);
 	brake(30, 9.5);
 
-	pickupSingle();
+	pickupSingleBottle();
 	setMotorTarget(motor_grab, 380, 30);
 	turn(0, 60, 0, -tireDistance/2, 45);
 
@@ -629,8 +267,8 @@ void pickupBottles() {
 	lfPDcm(40, 20);
 
 }
-//_solve_side
-void solve_side() {
+//_solveSide
+void solveSide() {
 	startTask(measureIndicators);
 	startTask(measureIndicators_l);
 	lfPDline(15, true, true);
@@ -648,16 +286,14 @@ void solve_side() {
 	resetMotorEncoder(motor_drive_right);
 
 	//_curva/_drift/_curl
-	int curva = side == 0 ? 0 : -1;
-	//int curva = 0;
-	//                    yb ^  rg^
+	int curva = side == 0 ? 0 : 0;
 
-	// if A side need drink
+	// side A drink
 	measureIndex = side;
 	if (colors[side + 1]) {
-		startTask(measureWashable_r);
+		startTask(measureLB);
 		brake(40, 7);
-		stopTask(measureWashable_r);
+		stopTask(measureLB);
 		delay(200);
 
 		displayLogic();
@@ -680,10 +316,11 @@ void solve_side() {
 
 		driveCm(-40 - curva, -40, 25.0);
 	}
+	// side A ball
 	else {
-		startTask(measureWashable_r);
+		startTask(measureLB);
 		driveCm(57, 60, 5.0);
-		stopTask(measureWashable_r);
+		stopTask(measureLB);
 
 		displayLogic();
 		driveCm(57, 60, 23.0);
@@ -713,14 +350,14 @@ void solve_side() {
 		setMotorTarget(motor_grab, 520, 20);
 		driveCm(-40 - curva, -40, 47.0);
 	}
-	// B side needs drink
+	// side B drink
 	measureIndex = side + 1;
 	resetMotorEncoder(motor_drive_right);
 	if (colors[side]) {
 		driveCm(-40, -40, 33.0);
-		startTask(measureWashable_r);
+		startTask(measureLB);
 		brake(-40, 36.75);
-		stopTask(measureWashable_r);
+		stopTask(measureLB);
 
 		displayLogic();
 		dropped = false;
@@ -735,19 +372,19 @@ void solve_side() {
 		}
 		waitUntil(dropped);
 
-		} else {
-		// ball
+	}
+	// side B ball
+	else {
 		driveCm(-39, -40, 30.0);
-		startTask(measureWashable_r);
+		startTask(measureLB);
 		driveCm(-40, -40, 36.0);
-		stopTask(measureWashable_r);
+		stopTask(measureLB);
 
 		displayLogic();
 		driveCm(-40, -40, 46.0);
 		driveCm(-40, -40, 50.6);
 		driveMs(-20, -20, 300);
 		brake(0,0);
-		//brake(-40, 50.6);
 		resetMotorEncoder(motor_drive_right);
 		setMotorTarget(motor_grab, 135, 30);
 		waitUntilMotorStop(motor_grab);
@@ -780,45 +417,44 @@ void solve_side() {
 }
 //_gotoSide2
 void gotoSide2() {
-	// person present next to start
-	side = 2;
-	if(true) {
-		resetMotorEncoder(motor_drive_right);
-		setMotorTarget(motor_grab, 50, 30);
-		lfPDcm(15, 8);
-		lfPDline(40, true, true);
-		resetMotorEncoder(motor_drive_right);
-		lfPDcm(40, 19);
-		driveCm(40, 40, 43);
-		brake(40, 48);
+	side = 2; // <- side effect for solve side
+	// if(true) {
+	resetMotorEncoder(motor_drive_right);
+	setMotorTarget(motor_grab, 50, 30);
+	lfPDcm(15, 8);
+	lfPDline(40, true, true);
+	resetMotorEncoder(motor_drive_right);
+	lfPDcm(40, 19);
+	driveCm(40, 40, 43);
+	brake(40, 48);
 
-		turn(40, 60, 40, tireDistance/2, 25);
-		turn(40, 60, 40, -40, 48);
-		turn(40, 60, 40, tireDistance/2, 15);
-		setMotorTarget(motor_grab, 520, 30);
-		//resetMotorEncoder(motor_drive_right);
-		//stopAllTasks();
-		resetMotorEncoder(motor_drive_right);
-		lfPDcm(30, 15);
-		lfPDcm(15, 20);
-		} else {
-		resetMotorEncoder(motor_drive_right);
-		lfPDcm(15, 8);
-		lfPDline(60, true, true);
-		resetMotorEncoder(motor_drive_right);
-		lfPDcm(60, 19);
-		driveCm(60, 60, 40);
-		setMotorTarget(motor_grab, 520, 30);
-		driveCm(60,60,90);
-		resetMotorEncoder(motor_drive_right);
-		lfPDcm(30, 15);
-		lfPDcm(15, 20);
-	}
+	turn(40, 60, 40, tireDistance/2, 25);
+	turn(40, 60, 40, -40, 48);
+	turn(40, 60, 40, tireDistance/2, 15);
+	setMotorTarget(motor_grab, 520, 30);
+	//resetMotorEncoder(motor_drive_right);
+	//stopAllTasks();
+	resetMotorEncoder(motor_drive_right);
+	lfPDcm(30, 15);
+	lfPDcm(15, 20);
+	// 	} else {
+	// 	resetMotorEncoder(motor_drive_right);
+	// 	lfPDcm(15, 8);
+	// 	lfPDline(60, true, true);
+	// 	resetMotorEncoder(motor_drive_right);
+	// 	lfPDcm(60, 19);
+	// 	driveCm(60, 60, 40);
+	// 	setMotorTarget(motor_grab, 520, 30);
+	// 	driveCm(60,60,90);
+	// 	resetMotorEncoder(motor_drive_right);
+	// 	lfPDcm(30, 15);
+	// 	lfPDcm(15, 20);
+	// }
 
 }
 
-//_gotoWashroom
-void gotoWashroom() {
+//_gotoLaundryArea
+void gotoLaundryArea() {
 	hsv res;
 	rgbw curr;
 
@@ -837,7 +473,7 @@ void gotoWashroom() {
 	getRGBW(color_left, curr);
 	rgb2hsv(curr, res);
 	frames[0] = hsvToColorFrames(res, curr.w);
-	writeDebugStreamLine("[FRAME @ i0] %d %f %f %d", res.h, res.s, res.v, curr.w);
+	writeDebugStreamLine("[FRAME 0] %d %f %f %d", res.h, res.s, res.v, curr.w);
 
 	resetMotorEncoder(motor_drive_right);
 	driveCm(-30, -30, 11);
@@ -849,25 +485,25 @@ void gotoWashroom() {
 
 	rgb2hsv(curr, res);
 	frames[1] = hsvToColorFrames(res, curr.w);
-	writeDebugStreamLine("[FRAME @ i1] %d %f %f %d", res.h, res.s, res.v, curr.w);
+	writeDebugStreamLine("[FRAME 1] %d %f %f %d", res.h, res.s, res.v, curr.w);
 
 
 	frames[2] = 3 - (frames[1] + frames[0]);
 	writeDebugStreamLine("[FRAMES] %d %d %d", frames[0], frames[1], frames[2]);
 }
-//_drop
-void drop() {
+//_dropLB
+void dropLB() {
 	setMotorTarget(motor_dropper, -100, 30);
 	waitUntilMotorStop(motor_dropper);
-	setMotorTarget(motor_dropper, -200, 55);
+	setMotorTarget(motor_dropper, -200, 65);
 	waitUntilMotorStop(motor_dropper);
 	delay(500);
 	setMotorTarget(motor_dropper, -10, 60);
 	delay(500);
 }
-//_dropWashables
-void dropWashables() {
-	int lb[4];
+//_dropLBs
+void dropLBs() {
+	LBColor lb[4];
 	rankLB(lb);
 	setMotorTarget(motor_grab, 120, 15);
 	resetMotorEncoder(motor_drive_right);
@@ -887,7 +523,7 @@ void dropWashables() {
 			t = (1 - ( index == 3 ? 1 : index )) * centerToCenterCM + 0.1;
 		}
 
-		writeDebugStreamLine("[Next Target] %d", t);
+		// writeDebugStreamLine("[ Next Target ] %d", t);
 		resetMotorEncoder(motor_drive_right);
 		if (t <= current_pos) {
 			driveCm(-30, -30, current_pos-t);
@@ -895,12 +531,12 @@ void dropWashables() {
 			driveCm(30, 30, current_pos-t);
 		}
 		brake(0, 0);
-		if (i != 4) drop();
+		if (i != 4) dropLB();
 
 		current_pos = t;
 	}
 }
-
+//_end
 void end() {
 	turn(0, 40, 0, 0, 88.0);
 	resetMotorEncoder(motor_drive_right);
@@ -927,7 +563,7 @@ task main()
 	if (!verifySetupHTCOL(S3) || !verifySetupHTCOL(S4)) {
 		writeDebugStreamLine("[INIT] SENSOR ERROR, check ht colors");
 	}
-	startTask(reset_start);
+	startTask(resetStart);
 	eraseDisplay();
 	waitUntil(reset);
 	setLEDColor(ledGreen);
@@ -939,11 +575,11 @@ task main()
 
 	pickupBottles();
 
-	solve_side();
+	solveSide();
 	gotoSide2();
-	solve_side();
-	gotoWashroom();
-	dropWashables();
+	solveSide();
+	gotoLaundryArea();
+	dropLBs();
 
 	end();
 
