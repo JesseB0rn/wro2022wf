@@ -286,7 +286,7 @@ void solveSide() {
 	resetMotorEncoder(motor_drive_right);
 
 	//_curva/_drift/_curl
-	int curva = side == 0 ? 0 : -1;
+	int curva = side == 0 ? 0 : 0;
 
 	// side A drink
 	measureIndex = side;
@@ -495,7 +495,7 @@ void gotoLaundryArea() {
 void dropLB() {
 	setMotorTarget(motor_dropper, -100, 30);
 	waitUntilMotorStop(motor_dropper);
-	setMotorTarget(motor_dropper, -200, 55);
+	setMotorTarget(motor_dropper, -200, 65);
 	waitUntilMotorStop(motor_dropper);
 	delay(500);
 	setMotorTarget(motor_dropper, -10, 60);
