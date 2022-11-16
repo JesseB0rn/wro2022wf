@@ -286,7 +286,7 @@ void solveSide() {
 	resetMotorEncoder(motor_drive_right);
 
 	//_curva/_drift/_curl
-	int curva = side == 0 ? 0 : 0;
+	// int curva = side == 0 ? 0 : 0;
 
 	// side A drink
 	measureIndex = side;
@@ -314,7 +314,8 @@ void solveSide() {
 		}
 		waitUntil(dropped);
 
-		driveCm(-40 - curva, -40, 25.0);
+		//driveCm(-40 - curva, -40, 25.0);
+		xt_drive(-40, 25.0);
 	}
 	// side A ball
 	else {
@@ -333,12 +334,13 @@ void solveSide() {
 		delay(500);
 		setMotorTarget(motor_grab, 520, 20);
 		waitUntilMotorStop(motor_grab);
-
-		// if washable
 		resetMotorEncoder(motor_drive_right);
+		// if washable
+
 		if (washables[side] != -1) {
 			setMotorTarget(motor_grab, 380, 30);
-			driveCm(-40 - curva, -40, 21.5);
+			//driveCm(-40 - curva, -40, 21.5);
+			xt_drive(-40, 21.5);
 			brake(-40, 26.75);
 
 			setMotorTarget(motor_grab, 70, 30);
@@ -346,9 +348,11 @@ void solveSide() {
 			setMotorTarget(motor_grab, 120, 30);
 			waitUntilMotorStop(motor_grab);
 		}
-		driveCm(-40 - curva, -40, 31.0);
+		// driveCm(-40 - curva, -40, 31.0);
+		xt_drive(-40, 31.0);
 		setMotorTarget(motor_grab, 520, 20);
-		driveCm(-40 - curva, -40, 47.0);
+		// driveCm(-40 - curva, -40, 47.0);
+		xt_drive(-40, 47.0);
 	}
 	// side B drink
 	measureIndex = side + 1;

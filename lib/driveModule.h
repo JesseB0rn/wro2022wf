@@ -10,6 +10,12 @@ float brakeCons = 0.08;
 float brakeConsTurn = 0.11;
 bool loop_stop = false;
 
+#define DR_P 0.75
+#define DR_D 1.25
+
+#define ACC 1.8
+#define DCC 0.4
+
 //_lfPDcm
 void lfPDcm(float speed, float distance)
 {
@@ -389,4 +395,49 @@ void driveMs(float leftSpeed, float rightSpeed, int ms)
     setMotorSpeed(motor_drive_left, leftSpeed);
     setMotorSpeed(motor_drive_right, rightSpeed);
     delay(ms);
+}
+// ----- regulated x transfer
+
+float renc_l, renc_r, delta;
+
+float xt_getEncoderL() {
+	return (-getMotorEncoder(motor_drive_left))-renc_l;
+}
+float xt_getEncoderR() {
+	return getMotorEncoder(motor_drive_right)-renc_r;
+}
+float xt_getDistL() {
+	return xt_getEncoderL() / 360 * PI * tireDiameter;
+}
+float xt_getDistR() {
+	return xt_getEncoderR() / 360 * PI * tireDiameter;
+}
+float xt_getDist() {
+	return (( xt_getDistL() + xt_getDistR() ) / 2);
+}
+
+void xt_reset_drive(bool full) {
+	delta = xt_getEncoderL() - xt_getEncoderR();
+	if (!full)
+		return;
+    renc_l = xt_getEncoderL();
+    renc_r = xt_getEncoderR();
+}
+
+void xt__drive(float vl, float vr, float &lerr) {
+	float err;
+
+	err = (xt_getEncoderL()) - xt_getEncoderR() - delta;
+	float corr = err * DR_P + (err-lerr) * DR_D;
+	setMotorSpeed(motor_drive_left, vl-corr);
+	setMotorSpeed(motor_drive_right, vr+corr);
+	lerr = err;
+	//writeDebugStreamLine("%f", err);
+}
+void xt_drive(float vm, float dist, bool reset = false) {
+	float lerr;
+	xt_reset_drive(reset);
+	while (dist >= abs(xt_getDist())) {
+		xt__drive(vm, vm, lerr);
+	}
 }
