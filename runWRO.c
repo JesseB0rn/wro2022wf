@@ -321,11 +321,13 @@ void solveSide() {
 	else {
 		startTask(measureLB);
 		driveCm(57, 60, 5.0);
+		//xt_drive(60, 5.0);
 		stopTask(measureLB);
 
 		displayLogic();
 		driveCm(57, 60, 23.0);
 		driveCm(57, 60, 26.0);
+		xt_drive(60, 26.0);
 		//brake(60, 28.5);
 		driveMs(20, 20, 300);
 		brake(0,0);
@@ -358,7 +360,8 @@ void solveSide() {
 	measureIndex = side + 1;
 	resetMotorEncoder(motor_drive_right);
 	if (colors[side]) {
-		driveCm(-40, -40, 33.0);
+		// driveCm(-40, -40, 33.0);
+		xt_drive(-40, 33.0);
 		startTask(measureLB);
 		brake(-40, 36.75);
 		stopTask(measureLB);
@@ -379,14 +382,16 @@ void solveSide() {
 	}
 	// side B ball
 	else {
-		driveCm(-39, -40, 30.0);
+		// driveCm(-39, -40, 30.0);
+		xt_drive(-40, 30.0);
 		startTask(measureLB);
-		driveCm(-40, -40, 36.0);
+		// driveCm(-40, -40, 36.0);
+		xt_drive(-40, 36.0);
 		stopTask(measureLB);
 
 		displayLogic();
-		driveCm(-40, -40, 46.0);
-		driveCm(-40, -40, 50.6);
+		// driveCm(-40, -40, 50.6);
+		xt_drive(-40, 50.6);
 		driveMs(-20, -20, 300);
 		brake(0,0);
 		resetMotorEncoder(motor_drive_right);
@@ -399,7 +404,8 @@ void solveSide() {
 		waitUntilMotorStop(motor_grab);
 
 		if (washables[side + 1] != -1) {
-			driveCm(30, 30, 13);
+			// driveCm(30, 30, 13);
+			xt_drive(30, 13.0);
 			brake(30, 16);
 			setMotorTarget(motor_grab, 70, 30);
 			waitUntilMotorStop(motor_grab);
@@ -408,8 +414,8 @@ void solveSide() {
 			} else {
 			setMotorTarget(motor_grab, 70, 30);
 		}
-
-		driveCm(40, 40, 17.5);
+		xt_drive(40, 17.5);
+		// driveCm(40, 40, 17.5);
 	}
 	if (side == 2) {
 		resetMotorEncoder(motor_drive_right);
