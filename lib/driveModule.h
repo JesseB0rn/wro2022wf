@@ -10,8 +10,8 @@ float brakeCons = 0.08;
 float brakeConsTurn = 0.11;
 bool loop_stop = false;
 
-#define DR_P 0.75
-#define DR_D 1.25
+#define DR_P 0.15
+#define DR_D 1.40
 
 #define ACC 1.8
 #define DCC 0.4
@@ -406,38 +406,29 @@ float xt_getEncoderL() {
 float xt_getEncoderR() {
 	return getMotorEncoder(motor_drive_right)-renc_r;
 }
-float xt_getDistL() {
-	return xt_getEncoderL() / 360 * PI * tireDiameter;
-}
-float xt_getDistR() {
-	return xt_getEncoderR() / 360 * PI * tireDiameter;
-}
-float xt_getDist() {
-	return (( xt_getDistL() + xt_getDistR() ) / 2);
-}
 
-void xt_reset_drive(bool full) {
+void xt_reset_drive() {
 	delta = xt_getEncoderL() - xt_getEncoderR();
-	if (!full)
-		return;
-    renc_l = xt_getEncoderL();
-    renc_r = xt_getEncoderR();
+	//if (!full)
+	//	return;
+ //   renc_l = xt_getEncoderL();
+ //   renc_r = xt_getEncoderR();
 }
 
 void xt__drive(float vl, float vr, float &lerr) {
 	float err;
 
-	err = (xt_getEncoderL()) - xt_getEncoderR() - delta;
+	err = (xt_getEncoderL()*(vl/vr)) - xt_getEncoderR()*(vr/vl) - delta;
 	float corr = err * DR_P + (err-lerr) * DR_D;
-	setMotorSpeed(motor_drive_left, vl-corr);
-	setMotorSpeed(motor_drive_right, vr+corr);
+	setMotorSpeed(motor_drive_left, (vl*(vl/vr))-corr);
+	setMotorSpeed(motor_drive_right, (vr*(vr/vl))+corr);
 	lerr = err;
 	//writeDebugStreamLine("%f", err);
 }
-void xt_drive(float vm, float dist, bool reset = false) {
+void xt_drive(float vm, float dist, float curva = 0.98) {
 	float lerr;
-	xt_reset_drive(reset);
-	while (dist >= abs(xt_getDist())) {
-		xt__drive(vm, vm, lerr);
+	xt_reset_drive();
+	while (abs(dist) / (tireDiameter * PI) * 360 >= abs(getMotorEncoder(motor_drive_right))) {
+		xt__drive(vm*curva, vm, lerr);
 	}
 }
