@@ -433,6 +433,27 @@ void gotoSide2() {
 	setMotorTarget(motor_grab, 50, 30);
 	lfPDcm(15, 8);
 	lfPDline(40, true, true);
+
+	// --- surprise rule
+	if (colors[0]) {
+		resetMotorEncoder(motor_drive_right);
+		brake(40, 4);
+		delay(200);
+		driveCm(-40, -40, 3.0);
+		brake(-40, 5.0);
+		turn(0, -40, 0, tireDistance/2, 45);
+		resetMotorEncoder(motor_drive_right);
+		driveCm(-40, -40, 30.0);
+		brake(-40, 35.5);
+		delay(250);
+
+		resetMotorEncoder(motor_drive_right);
+		driveCm(40, 40, 30.0);
+		brake(40, 35.5);
+		turn(0, 40, 0, tireDistance/2, 45);
+		lfPDline(40, true, true);
+	}
+	// -- end surprise
 	resetMotorEncoder(motor_drive_right);
 	lfPDcm(40, 19);
 	driveCm(40, 40, 43);
@@ -470,6 +491,30 @@ void gotoLaundryArea() {
 
 	setMotorTarget(motor_grab, 30, 30);
 	lfPDline(15, true, true);
+
+		// --- surprise rule
+	if (colors[2]) {
+		resetMotorEncoder(motor_drive_right);
+		brake(15, 4);
+		delay(200);
+		driveCm(-40, -40, 3.0);
+		brake(-40, 5.0);
+		turn(0, -40, 0, tireDistance/2, 45);
+		resetMotorEncoder(motor_drive_right);
+		driveCm(-40, -40, 30.0);
+		brake(-40, 35.5);
+		delay(250);
+
+		resetMotorEncoder(motor_drive_right);
+		driveCm(40, 40, 30.0);
+		brake(40, 35.5);
+		turn(0, 40, 0, tireDistance/2, 45);
+		lfPDline(15, true, true);
+	}
+	// -- end surprise
+
+
+
 	turn(40, 60, 40, -tireDistance/2, 17.5);
 	turn(40, 60, 35, -70, 37.5);
 	turn(30, 60, 20, tireDistance/2, 55.5);
