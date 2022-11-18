@@ -120,7 +120,6 @@ void displayLogic()
 //_measureIndicators
 task measureIndicators()
 {
-	enableMeasure = true;
 	rgbw curr;
 	rgbw max;
 	max.r = 0;
@@ -141,7 +140,7 @@ task measureIndicators()
 //_measureIndicators_l
 task measureIndicators_l()
 {
-	enableMeasure  = true;
+
 	rgbw curr;
 	rgbw max;
 	max.r = 0;
@@ -188,8 +187,11 @@ task measureLB()
 		maxHSVBlocks[measureIndex].v = hsvres.v;
 	}
 }
+int drinkCnt = 0;
+
 //_dropDrink()
 task dropDrink() {
+	drinkCnt++;
 	dropped = false;
 	setMotorTarget(motor_dropper, -200, 20);
 	waitUntilMotorStop(motor_dropper);
@@ -269,6 +271,7 @@ void pickupBottles() {
 }
 //_solveSide
 void solveSide() {
+	enableMeasure  = true;
 	startTask(measureIndicators);
 	startTask(measureIndicators_l);
 	lfPDline(15, true, true);
@@ -420,10 +423,10 @@ void solveSide() {
 	if (side == 2) {
 		resetMotorEncoder(motor_drive_right);
 		driveCm(40, 40, 8.5);
-		turn(40, 40, 0, 24.5, 88.0);
+		turn(40, 40, 0, 23.5, 88.0);
 		return;
 	}
-	turn(40, 40, 0, 32.75, 88.0);
+	turn(40, 40, 0, 32.25, 88.0);
 }
 //_gotoSide2
 void gotoSide2() {
@@ -486,6 +489,10 @@ void gotoSide2() {
 
 //_gotoLaundryArea
 void gotoLaundryArea() {
+	if (drinkCnt < 2) {
+		startTask(dropDrink);
+	}
+
 	hsv res;
 	rgbw curr;
 
@@ -534,6 +541,7 @@ void gotoLaundryArea() {
 	driveCm(-30, -30, 11);
 	brake(-30, 8);
 	delay(200);
+	setMotorTarget(motor_grab, 300, 30);
 
 	getRGBW(color_left, curr);
 	rgb2hsv(curr, res);
@@ -545,8 +553,6 @@ void gotoLaundryArea() {
 
 	frames[2] = 3 - (frames[1] + frames[0]);
 	writeDebugStreamLine("[FRAMES] %d %d %d", frames[0], frames[1], frames[2]);
-
-	setMotorTarget(motor_grab, 380, 15);
 }
 //_dropLB
 void dropLB() {
@@ -560,9 +566,9 @@ void dropLB() {
 }
 //_dropLBs
 void dropLBs() {
+	setMotorTarget(motor_grab, 380, 30);
 	LBColor lb[4];
 	rankLB(lb);
-	setMotorTarget(motor_grab, 120, 15);
 	resetMotorEncoder(motor_drive_right);
 	int current_pos = 0;
 	int centerToCenterCM = 11;
@@ -607,6 +613,7 @@ void end() {
 	driveCm(40, 40, 18.0);
 	brake(40, 23.0);
 	turn(0, 40, 0, 0, 44);
+	setMotorTarget(motor_grab, 5, 30);
 }
 
 // _main

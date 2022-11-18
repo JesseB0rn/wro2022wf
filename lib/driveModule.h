@@ -424,7 +424,7 @@ void xt__drive(float vl, float vr, float &lerr) {
 	setMotorSpeed(motor_drive_left, (vl*(vl/vr))-corr);
 	setMotorSpeed(motor_drive_right, (vr*(vr/vl))+corr);
 	lerr = err;
-	writeDebugStreamLine("%d %d", (vl*(vl/vr))-corr, (vr*(vr/vl))+corr);
+	// writeDebugStreamLine("%d %d", (vl*(vl/vr))-corr, (vr*(vr/vl))+corr);
 }
 void xt_drive(float vl, float vr, float dist) {
 	float lerr;
