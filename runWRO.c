@@ -254,12 +254,12 @@ void pickupBottles() {
 	brake(30, 9.5);
 
 	pickupSingleBottle();
-	setMotorTarget(motor_grab, 380, 30);
+	setMotorTarget(motor_grab, 380, 15);
 	turn(0, 60, 0, -tireDistance/2, 45);
 
 	resetMotorEncoder(motor_drive_right);
-	driveCm(60, 60, 28);
-	brake(60, 34);
+	driveCm(60, 60, 26);
+	brake(60, 32);
 	setMotorTarget(motor_grab, 520, 15);
 	turn(0, 60, 0, tireDistance/2, 45);
 	setMotorTarget(motor_grab, 520, 15);
@@ -315,7 +315,7 @@ void solveSide() {
 		waitUntil(dropped);
 
 		//driveCm(-40 - curva, -40, 25.0);
-		xt_drive(-40, 25.0);
+		xt_drive(-40, -40, 25.0);
 	}
 	// side A ball
 	else {
@@ -327,7 +327,7 @@ void solveSide() {
 		displayLogic();
 		driveCm(57, 60, 23.0);
 		driveCm(57, 60, 26.0);
-		xt_drive(60, 26.0);
+		xt_drive(60, 60, 26.0);
 		//brake(60, 28.5);
 		driveMs(20, 20, 300);
 		brake(0,0);
@@ -342,7 +342,7 @@ void solveSide() {
 		if (washables[side] != -1) {
 			setMotorTarget(motor_grab, 380, 30);
 			//driveCm(-40 - curva, -40, 21.5);
-			xt_drive(-40, 21.5);
+			xt_drive(-40,-40, 21.5);
 			brake(-40, 26.75);
 
 			setMotorTarget(motor_grab, 70, 30);
@@ -351,19 +351,19 @@ void solveSide() {
 			waitUntilMotorStop(motor_grab);
 		}
 		// driveCm(-40 - curva, -40, 31.0);
-		xt_drive(-40, 31.0);
+		xt_drive(-40, -40, 31.0);
 		setMotorTarget(motor_grab, 520, 20);
 		// driveCm(-40 - curva, -40, 47.0);
-		xt_drive(-40, 47.0);
+		xt_drive(-40, -40, 47.0);
 	}
 	// side B drink
 	measureIndex = side + 1;
 	resetMotorEncoder(motor_drive_right);
 	if (colors[side]) {
 		// driveCm(-40, -40, 33.0);
-		xt_drive(-40, 33.0);
+		xt_drive(-40, -40, 33.0);
 		startTask(measureLB);
-		brake(-40, 36.75);
+		brake(-40, 35.25);
 		stopTask(measureLB);
 
 		displayLogic();
@@ -382,16 +382,16 @@ void solveSide() {
 	}
 	// side B ball
 	else {
-		// driveCm(-39, -40, 30.0);
-		xt_drive(-40, 30.0);
+		// driveCm(-40, -40, 30.0);
+		xt_drive(-40, -40, 30.0);
 		startTask(measureLB);
 		// driveCm(-40, -40, 36.0);
-		xt_drive(-40, 36.0);
+		xt_drive(-40, -40, 36.0);
 		stopTask(measureLB);
 
 		displayLogic();
 		// driveCm(-40, -40, 50.6);
-		xt_drive(-40, 50.6);
+		xt_drive(-40, -40, 50.6);
 		driveMs(-20, -20, 300);
 		brake(0,0);
 		resetMotorEncoder(motor_drive_right);
@@ -405,7 +405,7 @@ void solveSide() {
 
 		if (washables[side + 1] != -1) {
 			// driveCm(30, 30, 13);
-			xt_drive(30, 13.0);
+			xt_drive(30, 30, 13.0);
 			brake(30, 16);
 			setMotorTarget(motor_grab, 70, 30);
 			waitUntilMotorStop(motor_grab);
@@ -414,7 +414,7 @@ void solveSide() {
 			} else {
 			setMotorTarget(motor_grab, 70, 30);
 		}
-		xt_drive(40, 17.5);
+		xt_drive(40, 40, 16.5);
 		// driveCm(40, 40, 17.5);
 	}
 	if (side == 2) {
@@ -423,7 +423,7 @@ void solveSide() {
 		turn(40, 40, 0, 24.5, 88.0);
 		return;
 	}
-	turn(40, 40, 0, 33.25, 88.0);
+	turn(40, 40, 0, 32.75, 88.0);
 }
 //_gotoSide2
 void gotoSide2() {
@@ -439,7 +439,7 @@ void gotoSide2() {
 	brake(40, 48);
 
 	turn(40, 60, 40, tireDistance/2, 25);
-	turn(40, 60, 40, -40, 48);
+	turn(40, 60, 40, -40, 44);
 	turn(40, 60, 40, tireDistance/2, 15);
 	setMotorTarget(motor_grab, 520, 30);
 	//resetMotorEncoder(motor_drive_right);
@@ -500,6 +500,8 @@ void gotoLaundryArea() {
 
 	frames[2] = 3 - (frames[1] + frames[0]);
 	writeDebugStreamLine("[FRAMES] %d %d %d", frames[0], frames[1], frames[2]);
+
+	setMotorTarget(motor_grab, 380, 15);
 }
 //_dropLB
 void dropLB() {

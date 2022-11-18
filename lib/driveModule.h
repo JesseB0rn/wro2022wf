@@ -10,8 +10,8 @@ float brakeCons = 0.08;
 float brakeConsTurn = 0.11;
 bool loop_stop = false;
 
-#define DR_P 0.15
-#define DR_D 1.40
+#define DR_P 0.25
+#define DR_D 1.80
 
 #define ACC 1.8
 #define DCC 0.4
@@ -415,6 +415,7 @@ void xt_reset_drive() {
  //   renc_r = xt_getEncoderR();
 }
 
+
 void xt__drive(float vl, float vr, float &lerr) {
 	float err;
 
@@ -423,12 +424,12 @@ void xt__drive(float vl, float vr, float &lerr) {
 	setMotorSpeed(motor_drive_left, (vl*(vl/vr))-corr);
 	setMotorSpeed(motor_drive_right, (vr*(vr/vl))+corr);
 	lerr = err;
-	//writeDebugStreamLine("%f", err);
+	writeDebugStreamLine("%d %d", (vl*(vl/vr))-corr, (vr*(vr/vl))+corr);
 }
-void xt_drive(float vm, float dist, float curva = 0.98) {
+void xt_drive(float vl, float vr, float dist) {
 	float lerr;
 	xt_reset_drive();
 	while (abs(dist) / (tireDiameter * PI) * 360 >= abs(getMotorEncoder(motor_drive_right))) {
-		xt__drive(vm*curva, vm, lerr);
+		xt__drive(vl, vr, lerr);
 	}
 }
