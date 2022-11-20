@@ -188,9 +188,12 @@ task main()
 	brake(0,0);
 	pickupSingleBottle();
 
-
+	delay(250);
+	setMotorTarget(motor_grab, 320, 30);
 	turn(0, -40, 0, -tireDistance/2, 27.5);
 	turn(0, -40, 0, tireDistance/2, 27.5);
+
+
 
 	resetMotorEncoder(motor_drive_right);
 	lfPDcm(40, 25.0);
@@ -227,11 +230,101 @@ task main()
 	waitUntil(dropped);
 
 	resetMotorEncoder(motor_drive_right);
-	driveCm(-40, -40, 33.0);
+	driveCm(-40, -40, 11.0);
+	turn(0, 40, 0, 19.5, 88.0);
 
-	turn( 0, 40, 0, 0, 89.0);
+	lfPDline(15, true, true);
+	resetMotorEncoder(motor_drive_right);
+	lfPDcm(15, 7.0);
 
+	turn(0, -40, 0, 0, 89.0);
+
+	lfPDline(40, true, true);
+
+	resetMotorEncoder(motor_drive_right);
+	lfPDcm(40, 10.0);
+	brake(40, 15.0);
+	setMotorTarget(motor_grab, 520, 30);
+	turn(0, 40, 0, 0, 180);
+
+	lfPDline(40, true, true);
+	resetMotorEncoder(motor_drive_right);
+	brake(40, 8.5);
+	delay(250);
+
+	// pickup 1 green block at blue
+	turn(0, -40, 0, tireDistance/2, 27.5);
+	turn(0, -40, 0, -tireDistance/2, 27.5);
+
+	brake(0,0);
+	pickupSingleBottle();
+	delay(250);
+	setMotorTarget(motor_grab, 320, 30);
+	turn(0, -40, 0, -tireDistance/2, 27.5);
+	turn(0, -40, 0, tireDistance/2, 27.5);
+
+
+
+	resetMotorEncoder(motor_drive_right);
+	lfPDcm(40, 25.0);
+	lfPDline(40, true, true);
+	resetMotorEncoder(motor_drive_right);
+
+	// goto red manzgi
+
+	resetMotorEncoder(motor_drive_right);
+	lfPDcm(40, 18.0);
+	driveCm(40, 40, 63.0);
+	setMotorTarget(motor_grab, 520, 30);
+	lfPDline(15, true, true);
+	resetMotorEncoder(motor_drive_right);
+	lfPDcm(15, 7);
+	turn(0,-40,0,0,89);
+	resetMotorEncoder(motor_drive_right);
+
+	lfPDcm(40, 22.0);
+	brake(40, 27.0);
+
+	setMotorTarget(motor_grab, 180, 15);
+	waitUntilMotorStop(motor_grab);
+
+	turn(0, 40, 0, -tireDistance/2, 180);
+	resetMotorEncoder(motor_drive_right);
+	driveCm(15, 15, 20);
+	turn(0, 40, 0, tireDistance/2, 90);
+	resetMotorEncoder(motor_drive_right);
+
+	driveCm(40, 40, 37.0);
+	lfPDline(15, true, true);
+	resetMotorEncoder(motor_drive_right);
+
+	lfPDcm(40, 45);
+	turn(0, 40, 0, -tireDistance/2, 90);
+	resetMotorEncoder(motor_drive_right);
+	driveCm(40, 40, 11);
+	brake(40, 16);
+
+	setMotorTarget(motor_grab, 520, 40);
+	waitUntilMotorStop(motor_grab);
+
+	resetMotorEncoder(motor_drive_right);
+	driveCm(15, 15, 4);
+
+	turn(0, 40, 0, -tireDistance/2, 45);
+	delay(250);
+	turn(0, -40, 0, -tireDistance/2, 45);
+
+	resetMotorEncoder(motor_drive_right);
+	driveCm(-40, -40, 23);
+	brake(-40, 27);
+
+	turn(0, -40, 0, 0, 90);
+	resetMotorEncoder(motor_drive_right);
+	lfPDcm(40, 40);
+	lfPDline(40, true, true);
 	end();
+
+
 
 	brake(0, 0);
 	eraseDisplay();
